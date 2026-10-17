@@ -13,7 +13,7 @@ const ownerInteractiveSessions = new Map();
 const spamTracker = new Map();
 const tictactoeGames = new Map();
 
-// TABELA DE MINÉRRIOS
+// TABELA DE MINÉRIOS
 const ORES = {
   carvao: { id: "carvao", name: "Carvão", rarity: 0.40, basePrice: 2, icon: "⬛" },
   cobre: { id: "cobre", name: "Cobre", rarity: 0.25, basePrice: 5, icon: "🥉" },
@@ -709,9 +709,9 @@ async function startBot() {
             tictactoeGames.set(from, game);
 
             const boardDisplay = `🎮 *JOGO DA VELHA VALENDO ${game.bet}¢*\n\n` +
-              `1️⃣ ${game.board[0]} | 2️⃣ ${game.board[1]} \vert{} 3️⃣ ${game.board[2]}\n` +
-              `4️⃣ ${game.board[3]} | 5️⃣ ${game.board[4]} \vert{} 6️⃣ ${game.board[5]}\n` +
-              `7️⃣ ${game.board[6]} | 8️⃣ ${game.board[7]} \vert{} 9️⃣ ${game.board[8]}\n\n` +
+              `1️⃣ ${game.board[0]} | 2️⃣ ${game.board[1]} ┃ 3️⃣ ${game.board[2]}\n` +
+              `4️⃣ ${game.board[3]} | 5️⃣ ${game.board[4]} ┃ 6️⃣ ${game.board[5]}\n` +
+              `7️⃣ ${game.board[6]} | 8️⃣ ${game.board[7]} ┃ 9️⃣ ${game.board[8]}\n\n` +
               `👉 Vez do jogador: @${game.turn.split('@')[0]} (Responda com o número de 1 a 9)`;
             await safeSendMessage(sock, from, { text: boardDisplay, mentions: [game.turn] });
             continue;
