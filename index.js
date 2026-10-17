@@ -13,6 +13,92 @@ const ownerInteractiveSessions = new Map();
 const spamTracker = new Map();
 const tictactoeGames = new Map();
 
+// TABELA DE MINÉRRIOS
+const ORES = {
+  carvao: { id: "carvao", name: "Carvão", rarity: 0.40, basePrice: 2, icon: "⬛" },
+  cobre: { id: "cobre", name: "Cobre", rarity: 0.25, basePrice: 5, icon: "🥉" },
+  ferro: { id: "ferro", name: "Ferro", rarity: 0.15, basePrice: 12, icon: "⚙️" },
+  ouro: { id: "ouro", name: "Ouro", rarity: 0.10, basePrice: 30, icon: "🪙" },
+  diamante: { id: "diamante", name: "Diamante", rarity: 0.06, basePrice: 80, icon: "💎" },
+  esmeralda: { id: "esmeralda", name: "Esmeralda", rarity: 0.03, basePrice: 150, icon: "🟢" },
+  netunerita: { id: "netunerita", name: "Netunerita", rarity: 0.009, basePrice: 350, icon: "🌌" },
+  pedra_filosofal: { id: "pedra_filosofal", name: "Pedra Filosofal", rarity: 0.001, basePrice: 1000, icon: "🔮" }
+};
+
+// TABELA DE PICARETAS E PRODUTOS DEFAULT
+const DEFAULT_PRODUCTS = {
+  "trocar_profissao": {
+    id: "trocar_profissao",
+    name: "Trocar de Profissão",
+    desc: "Muda sua profissão para uma nova aleatória com salários melhores ou piores!",
+    price: 150
+  },
+  "picareta_madeira": {
+    id: "picareta_madeira",
+    name: "Picareta de Madeira",
+    desc: "Aumenta seus minérios em 2x o valor encontrado e dá +1 minério extra.",
+    price: 300,
+    multiplier: 2,
+    extraOres: 1,
+    rareBoost: 1.0
+  },
+  "picareta_pedra": {
+    id: "picareta_pedra",
+    name: "Picareta de Pedra",
+    desc: "Multiplica o valor em 3x e dá +2 minérios extras.",
+    price: 800,
+    multiplier: 3,
+    extraOres: 2,
+    rareBoost: 1.2
+  },
+  "picareta_ferro": {
+    id: "picareta_ferro",
+    name: "Picareta de Ferro",
+    desc: "Multiplica o valor em 4x e aumenta a chance de minérios raros.",
+    price: 2000,
+    multiplier: 4,
+    extraOres: 3,
+    rareBoost: 1.5
+  },
+  "picareta_diamante": {
+    id: "picareta_diamante",
+    name: "Picareta de Diamante",
+    desc: "Multiplica o valor em 6x e dá minérios altamente valiosos.",
+    price: 5000,
+    multiplier: 6,
+    extraOres: 4,
+    rareBoost: 2.0
+  },
+  "picareta_aco": {
+    id: "picareta_aco",
+    name: "Picareta de Aço",
+    desc: "Multiplica em 8x o valor dos minérios e concede +5 minérios por expedição.",
+    price: 12000,
+    multiplier: 8,
+    extraOres: 5,
+    rareBoost: 3.0
+  },
+  "picareta_titanium": {
+    id: "picareta_titanium",
+    name: "Picareta de Titanium",
+    desc: "Multiplica em 10x o valor e garante alta presença de Netunerita e Diamantes.",
+    price: 25000,
+    multiplier: 10,
+    extraOres: 6,
+    rareBoost: 4.5
+  },
+  "picareta_dos_deuses": {
+    id: "picareta_dos_deuses",
+    name: "Picareta dos Deuses",
+    desc: "A mais OP! Multiplica por 11x, garante apenas minérios raros e permite minerar 2x seguidas!",
+    price: 60000,
+    multiplier: 11,
+    extraOres: 8,
+    rareBoost: 8.0,
+    doubleMine: true
+  }
+};
+
 function loadDatabase() {
   if (!fs.existsSync(DB_PATH)) {
     const defaultData = {
@@ -30,19 +116,15 @@ function loadDatabase() {
       groupRequests: {},
       suggestions: {},
       userProfessions: {},
+      userPickaxes: {},
+      userOres: {},
       cooldowns: {},
-      shopProducts: {
-        "trocar_profissao": {
-          id: "trocar_profissao",
-          name: "Trocar de Profissão",
-          desc: "Troca sua profissão por uma nova aleatória com chances de salários melhores ou piores!",
-          price: 50
-        }
-      },
+      shopProducts: DEFAULT_PRODUCTS,
       gameConfigs: {
         minSalary: 50,
         workCooldownHours: 24,
-        robCooldownHours: 12
+        robCooldownHours: 12,
+        mineCooldownHours: 6
       },
       diceWinStreak: {},
       suggestionCounter: 1,
@@ -70,16 +152,11 @@ function loadDatabase() {
     if (!data.groupRequests) data.groupRequests = {};
     if (!data.suggestions) data.suggestions = {};
     if (!data.userProfessions) data.userProfessions = {};
+    if (!data.userPickaxes) data.userPickaxes = {};
+    if (!data.userOres) data.userOres = {};
     if (!data.cooldowns) data.cooldowns = {};
-    if (!data.shopProducts) data.shopProducts = {
-      "trocar_profissao": {
-        id: "trocar_profissao",
-        name: "Trocar de Profissão",
-        desc: "Troca sua profissão por uma nova aleatória com chances de salários melhores ou piores!",
-        price: 50
-      }
-    };
-    if (!data.gameConfigs) data.gameConfigs = { minSalary: 50, workCooldownHours: 24, robCooldownHours: 12 };
+    if (!data.shopProducts) data.shopProducts = DEFAULT_PRODUCTS;
+    if (!data.gameConfigs) data.gameConfigs = { minSalary: 50, workCooldownHours: 24, robCooldownHours: 12, mineCooldownHours: 6 };
     if (!data.diceWinStreak) data.diceWinStreak = {};
     if (data.suggestionCounter === undefined) data.suggestionCounter = 1;
     if (data.requestCounter === undefined) data.requestCounter = 1;
@@ -90,7 +167,7 @@ function loadDatabase() {
     };
     return data;
   } catch {
-    return { ownerJid: null, ownerName: "MONTANHA DEV", ownerNumber: FIXED_OWNER_NUMBER, rentedGroups: {}, blacklistedUsers: [], customCommands: {}, groupSettings: {}, partners: {}, groupSchedules: {}, mutedUsers: {}, wallets: {}, groupRequests: {}, suggestions: {}, userProfessions: {}, cooldowns: {}, shopProducts: {}, gameConfigs: { minSalary: 50, workCooldownHours: 24, robCooldownHours: 12 }, diceWinStreak: {}, suggestionCounter: 1, requestCounter: 1, rentalPlans: {} };
+    return { ownerJid: null, ownerName: "MONTANHA DEV", ownerNumber: FIXED_OWNER_NUMBER, rentedGroups: {}, blacklistedUsers: [], customCommands: {}, groupSettings: {}, partners: {}, groupSchedules: {}, mutedUsers: {}, wallets: {}, groupRequests: {}, suggestions: {}, userProfessions: {}, userPickaxes: {}, userOres: {}, cooldowns: {}, shopProducts: DEFAULT_PRODUCTS, gameConfigs: { minSalary: 50, workCooldownHours: 24, robCooldownHours: 12, mineCooldownHours: 6 }, diceWinStreak: {}, suggestionCounter: 1, requestCounter: 1, rentalPlans: {} };
   }
 }
 
@@ -177,6 +254,30 @@ const PROFESSIONS = [
 
 function getRandomProfession() {
   return PROFESSIONS[Math.floor(Math.random() * PROFESSIONS.length)];
+}
+
+function getRandomOre(rareBoost = 1.0) {
+  const oreKeys = Object.keys(ORES);
+  let totalWeight = 0;
+  const weights = {};
+
+  for (const k of oreKeys) {
+    let w = ORES[k].rarity;
+    if (k !== 'carvao' && k !== 'cobre') {
+      w = w * rareBoost;
+    }
+    weights[k] = w;
+    totalWeight += w;
+  }
+
+  let rand = Math.random() * totalWeight;
+  for (const k of oreKeys) {
+    if (rand < weights[k]) {
+      return ORES[k];
+    }
+    rand -= weights[k];
+  }
+  return ORES.carvao;
 }
 
 function initBackgroundTasks(sock) {
@@ -385,49 +486,6 @@ async function startBot() {
       if (isOwner && ownerInteractiveSessions.has(senderJid)) {
         const session = ownerInteractiveSessions.get(senderJid);
 
-        if (session.step === 'ADD_PROD_ID') {
-          session.prodId = trimmedText.toLowerCase().replace(/\s+/g, '_');
-          session.step = 'ADD_PROD_NAME';
-          ownerInteractiveSessions.set(senderJid, session);
-          await safeSendMessage(sock, from, { text: "📦 *Passo 2/4:* Digite o Nome do Produto (ex: Trocar de Profissão):" }, { quoted: msg });
-          continue;
-        }
-
-        if (session.step === 'ADD_PROD_NAME') {
-          session.prodName = trimmedText;
-          session.step = 'ADD_PROD_DESC';
-          ownerInteractiveSessions.set(senderJid, session);
-          await safeSendMessage(sock, from, { text: "📋 *Passo 3/4:* Digite a Descrição do produto:" }, { quoted: msg });
-          continue;
-        }
-
-        if (session.step === 'ADD_PROD_DESC') {
-          session.prodDesc = trimmedText;
-          session.step = 'ADD_PROD_PRICE';
-          ownerInteractiveSessions.set(senderJid, session);
-          await safeSendMessage(sock, from, { text: "💳 *Passo 4/4:* Digite o Valor em coins ¢ (ex: 50):" }, { quoted: msg });
-          continue;
-        }
-
-        if (session.step === 'ADD_PROD_PRICE') {
-          const price = parseInt(trimmedText);
-          if (isNaN(price) || price <= 0) {
-            await safeSendMessage(sock, from, { text: "⚠️ Informe um valor válido em coins!" }, { quoted: msg });
-            continue;
-          }
-
-          db.shopProducts[session.prodId] = {
-            id: session.prodId,
-            name: session.prodName,
-            desc: session.prodDesc,
-            price: price
-          };
-          saveDatabase(db);
-          ownerInteractiveSessions.delete(senderJid);
-          await safeSendMessage(sock, from, { text: `✅ *PRODUTO CADASTRADO COM SUCESSO!*\n\n📦 *ID:* \`${session.prodId}\`\n📌 *Nome:* ${session.prodName}\n📋 *Descrição:* ${session.prodDesc}\n💳 *Valor:* ${price}¢` }, { quoted: msg });
-          continue;
-        }
-
         if (session.step === 'EDIT_PROD_SELECT') {
           const prodId = trimmedText.toLowerCase();
           if (!db.shopProducts[prodId]) {
@@ -435,9 +493,25 @@ async function startBot() {
             continue;
           }
           session.prodId = prodId;
-          session.step = 'ADD_PROD_NAME';
+          session.step = 'EDIT_PROD_PRICE';
           ownerInteractiveSessions.set(senderJid, session);
-          await safeSendMessage(sock, from, { text: `✏️ Editando \`${prodId}\`.\n📦 *Novo Nome do Produto:*` }, { quoted: msg });
+          await safeSendMessage(sock, from, { text: `✏️ Editando \`${prodId}\`.\n💳 *Digite o Novo Valor em Coins (¢):*` }, { quoted: msg });
+          continue;
+        }
+
+        if (session.step === 'EDIT_PROD_PRICE') {
+          const price = parseInt(trimmedText);
+          if (isNaN(price) || price <= 0) {
+            await safeSendMessage(sock, from, { text: "⚠️ Valor inválido!" }, { quoted: msg });
+            continue;
+          }
+
+          if (db.shopProducts[session.prodId]) {
+            db.shopProducts[session.prodId].price = price;
+            saveDatabase(db);
+          }
+          ownerInteractiveSessions.delete(senderJid);
+          await safeSendMessage(sock, from, { text: `✅ Valor do produto \`${session.prodId}\` alterado para *${price}¢* com sucesso!` }, { quoted: msg });
           continue;
         }
 
@@ -741,7 +815,7 @@ async function startBot() {
         continue;
       }
 
-      const isFreeCommand = ['/menualuguel', '/aluguel', '/alugar', '/menuadm', '/menu', '/ping', '/owner', '/dono', '/mtn', '/menuparceria', '/menujogos', '/menudono', '/sugestao', '/listsugestoes', '/upsugestao', '/rmsugestao', '/menulojacoin', '/catálogo', '/catalogo', '/carteira', '/comprar', '/trabalhar', '/roubar'].includes(command);
+      const isFreeCommand = ['/menualuguel', '/aluguel', '/alugar', '/menuadm', '/menu', '/ping', '/owner', '/dono', '/mtn', '/menuparceria', '/menujogos', '/menudono', '/sugestao', '/listsugestoes', '/upsugestao', '/rmsugestao', '/menulojacoin', '/catálogo', '/catalogo', '/carteira', '/comprar', '/trabalhar', '/roubar', '/minerar', '/minerios', '/venderminerios'].includes(command);
 
       if (isGroup && !isOwner && !isFreeCommand) {
         const hasRent = isGroupRented(db.rentedGroups, from);
@@ -752,14 +826,153 @@ async function startBot() {
         }
       }
 
+      // SISTEMA DE MINERAÇÃO
+      if (command === '/minerar') {
+        const now = Date.now();
+        const cooldownHours = db.gameConfigs?.mineCooldownHours || 6;
+        const cooldownMs = cooldownHours * 60 * 60 * 1000;
+        const lastMine = db.cooldowns[`mine_${senderJid}`] || 0;
+
+        if (now - lastMine < cooldownMs) {
+          const remainingMs = cooldownMs - (now - lastMine);
+          const remainingHours = Math.ceil(remainingMs / (1000 * 60 * 60));
+          await safeSendMessage(sock, from, { text: `⛏️ Seus braços estão cansados! Aguarde *${remainingHours}h* para entrar na mina novamente.` }, { quoted: msg });
+          continue;
+        }
+
+        const pickaxeId = db.userPickaxes[senderJid] || null;
+        const pickaxe = db.shopProducts[pickaxeId] || null;
+
+        let baseAmount = Math.floor(Math.random() * 10) + 1;
+        let rareBoost = pickaxe?.rareBoost || 1.0;
+        if (pickaxe?.extraOres) baseAmount += pickaxe.extraOres;
+
+        if (!db.userOres[senderJid]) db.userOres[senderJid] = {};
+
+        const minedSummary = {};
+        const loops = pickaxe?.doubleMine ? 2 : 1;
+
+        for (let l = 0; l < loops; l++) {
+          for (let i = 0; i < baseAmount; i++) {
+            const ore = getRandomOre(rareBoost);
+            db.userOres[senderJid][ore.id] = (db.userOres[senderJid][ore.id] || 0) + 1;
+            minedSummary[ore.name] = (minedSummary[ore.name] || 0) + 1;
+          }
+        }
+
+        db.cooldowns[`mine_${senderJid}`] = now;
+        saveDatabase(db);
+
+        let report = `⛏️ *EXPEDIÇÃO DE MINERAÇÃO CONCLUÍDA!* 🌌\n\n` +
+          `🔨 *Picareta Utilizada:* ${pickaxe ? pickaxe.name : "Mãos Nua / Enxada Simples"}\n` +
+          `📦 *Minérios Encontrados:*\n`;
+
+        for (const [oName, count] of Object.entries(minedSummary)) {
+          report += `› ${count}x${oName}\n`;
+        }
+
+        report += `\n👉 Use \`/minerios\` para ver seu inventário ou \`/venderminerios todos\` para lucrar!`;
+        await safeSendMessage(sock, from, { text: report }, { quoted: msg });
+        continue;
+      }
+
+      if (command === '/minerios') {
+        const ores = db.userOres[senderJid] || {};
+        const entries = Object.entries(ores).filter(([_, count]) => count > 0);
+
+        if (entries.length === 0) {
+          await safeSendMessage(sock, from, { text: "📦 Seu inventário de minérios está totalmente vazio! Use `/minerar` para obter minérios." }, { quoted: msg });
+          continue;
+        }
+
+        let invText = `📦 *INVENTÁRIO DE MINÉRIOS DE @${userNumber}* 🌙\n\n`;
+        let totalValueEstimated = 0;
+
+        const pickaxeId = db.userPickaxes[senderJid] || null;
+        const pickaxe = db.shopProducts[pickaxeId] || null;
+        const multiplier = pickaxe?.multiplier || 1;
+
+        for (const [oreId, count] of entries) {
+          const oreInfo = ORES[oreId];
+          if (oreInfo) {
+            const val = oreInfo.basePrice * count * multiplier;
+            totalValueEstimated += val;
+            invText += `${oreInfo.icon} *${oreInfo.name}:* ${count}x (Valor estimado:${val}¢)\n`;
+          }
+        }
+
+        invText += `\n💰 *Valor Total Estimado:* ${totalValueEstimated}¢\n` +
+          `👉 Para vender, use: \`/venderminerios <minerio>\` ou \`/venderminerios todos\``;
+
+        await safeSendMessage(sock, from, { text: invText, mentions: [senderJid] }, { quoted: msg });
+        continue;
+      }
+
+      if (command === '/venderminerios') {
+        const targetOre = args[0]?.toLowerCase();
+        const userOres = db.userOres[senderJid] || {};
+
+        if (!targetOre) {
+          await safeSendMessage(sock, from, { text: "⚠️ Informe o minério a vender ou use `/venderminerios todos`. Exemplo: `/venderminerios diamante`" }, { quoted: msg });
+          continue;
+        }
+
+        const pickaxeId = db.userPickaxes[senderJid] || null;
+        const pickaxe = db.shopProducts[pickaxeId] || null;
+        const multiplier = pickaxe?.multiplier || 1;
+
+        if (targetOre === 'todos') {
+          let totalEarned = 0;
+          let itemCount = 0;
+
+          for (const [oreId, count] of Object.entries(userOres)) {
+            if (count > 0 && ORES[oreId]) {
+              const val = ORES[oreId].basePrice * count * multiplier;
+              totalEarned += val;
+              itemCount += count;
+              db.userOres[senderJid][oreId] = 0;
+            }
+          }
+
+          if (totalEarned === 0) {
+            await safeSendMessage(sock, from, { text: "⚠️ Você não possui minérios para vender no momento!" }, { quoted: msg });
+            continue;
+          }
+
+          updateBalance(db, senderJid, totalEarned);
+          saveDatabase(db);
+
+          await safeSendMessage(sock, from, { text: `💰 *VENDA CONCLUÍDA!* Você vendeu ${itemCount} minérios e faturou *+${totalEarned}¢*!` }, { quoted: msg });
+          continue;
+        }
+
+        // Venda individual
+        const oreKey = Object.keys(ORES).find(k => k === targetOre || ORES[k].name.toLowerCase() === targetOre);
+        if (!oreKey || !userOres[oreKey] || userOres[oreKey] <= 0) {
+          await safeSendMessage(sock, from, { text: `⚠️ Você não possui minérios do tipo \`${targetOre}\` para vender.` }, { quoted: msg });
+          continue;
+        }
+
+        const count = userOres[oreKey];
+        const earned = ORES[oreKey].basePrice * count * multiplier;
+        db.userOres[senderJid][oreKey] = 0;
+
+        updateBalance(db, senderJid, earned);
+        saveDatabase(db);
+
+        await safeSendMessage(sock, from, { text: `💰 *VENDA REALIZADA!* Você vendeu ${count}x ${ORES[oreKey].name} e recebeu *+${earned}¢*!` }, { quoted: msg });
+        continue;
+      }
+
       // LOJINHA DE COINS
       if (command === '/menulojacoin') {
         const shopMenu = `🛍️ *LOJINHA LUNAR COINS — LUNAR SYSTEM ©* 🌙\n\n` +
           `❖ 🛒 MENU DE COMPRAS\n` +
           `› /carteira - Consulta seu saldo em Lunar Cents (¢)\n` +
-          `› /catálogo - Exibe os produtos disponíveis na loja\n` +
+          `› /catálogo - Exibe as picaretas e itens da loja\n` +
+          `› /minerios - Exibe seus minérios coletados\n` +
+          `› /venderminerios <minerio|todos> - Vende seus minérios\n` +
           `› /comprar <id_produto> - Realiza a compra do produto desejado\n\n` +
-          `✨ Invista seus ganhos e evolua na Lunar System!\n` +
           `✦ LUNAR SYSTEM © ✨`;
 
         await safeSendMessage(sock, from, { text: shopMenu }, { quoted: msg });
@@ -773,7 +986,7 @@ async function startBot() {
           continue;
         }
 
-        let catText = `🛍️ *CATÁLOGO DE PRODUTOS LUNAR COIN (¢)* 🌙\n\n`;
+        let catText = `🛍️ *CATÁLOGO OFICIAL LUNAR COIN (¢)* 🌙\n\n`;
         for (const p of prods) {
           catText += `Produto 📦: *${p.name}* (ID: \`${p.id}\`)\n` +
             `Descrição 📋: ${p.desc}\n` +
@@ -809,6 +1022,14 @@ async function startBot() {
           saveDatabase(db);
 
           await safeSendMessage(sock, from, { text: `🎉 *COMPRA REALIZADA COM SUCESSO!* 🛒\n\nVocê adquiriu *${prod.name}* por *${prod.price}¢*!\n\n💼 *Sua nova profissão é:* **${newProf.name}**!\nMultiplicador salarial: *${newProf.multiplier}x*` }, { quoted: msg });
+          continue;
+        }
+
+        if (prodId.startsWith('picareta_')) {
+          db.userPickaxes[senderJid] = prodId;
+          saveDatabase(db);
+
+          await safeSendMessage(sock, from, { text: `🎉 *PICARETA ADQUIRIDA COM SUCESSO!* 🔨\n\nVocê comprou a *${prod.name}* por *${prod.price}¢*!\n\n✨ *Benefício Ativo:* Multiplicador de ${prod.multiplier}x no valor dos minérios e maior taxa de raridade em /minerar!` }, { quoted: msg });
           continue;
         }
 
@@ -963,15 +1184,9 @@ async function startBot() {
       }
 
       // COMANDOS DO DONO PARA GERENCIAR LOJINHA DE COIN
-      if (command === '/addprodutocoin' && isOwner) {
-        ownerInteractiveSessions.set(senderJid, { step: 'ADD_PROD_ID' });
-        await safeSendMessage(sock, from, { text: "📦 *Passo 1/4:* Digite o ID do Produto (ex: trocar_profissao):" }, { quoted: msg });
-        continue;
-      }
-
       if (command === '/editprodutocoin' && isOwner) {
         ownerInteractiveSessions.set(senderJid, { step: 'EDIT_PROD_SELECT' });
-        await safeSendMessage(sock, from, { text: "✏️ Digite o ID do produto que deseja editar:" }, { quoted: msg });
+        await safeSendMessage(sock, from, { text: "✏️ Digite o ID do produto que deseja editar o valor:" }, { quoted: msg });
         continue;
       }
 
@@ -1106,8 +1321,7 @@ async function startBot() {
           `› /rmaluguel - Remove o aluguel do grupo\n` +
           `› /addtempoextra - Soma horas extras\n` +
           `› /listalugueis - Lista todos os grupos alugados\n` +
-          `› /addprodutocoin - Adiciona produto à lojinha\n` +
-          `› /editprodutocoin - Edita produto da lojinha\n` +
+          `› /editprodutocoin - Edita valor de produto da lojinha\n` +
           `› /listsolicitacoesgrupo - Lista solicitações de entrada\n` +
           `› /listsugestoes - Lista sugestões enviadas\n` +
           `› /upsugestao <id> - Aprova/anuncia sugestão\n` +
@@ -1644,7 +1858,7 @@ async function startBot() {
         continue;
       }
 
-      const isGameCommand = ['/menujogos', '/carteira', '/dados', '/dardo', '/velha', '/slots', '/trabalhar', '/roubar'].includes(command);
+      const isGameCommand = ['/menujogos', '/carteira', '/dados', '/dardo', '/velha', '/slots', '/trabalhar', '/roubar', '/minerar', '/minerios', '/venderminerios'].includes(command);
       if (isGameCommand && isGroup) {
         const settings = db.groupSettings[from] || {};
         if (!settings.jogos && !isOwner) {
@@ -1654,16 +1868,20 @@ async function startBot() {
 
         if (command === '/menujogos') {
           const gamesMenu = `🤖 LUNAR BOT | LUNAR SYSTEM ©\n\n` +
-            `❖ 🎮 CASSINO & JOGOS\n` +
-            `› /menujogos - Exibe o painel de jogos\n` +
-            `› /carteira - Consulta seus Lunar Cents (¢)\n` +
-            `› /trabalhar - Exerce sua profissão diária\n` +
-            `› /roubar @membro - Tenta assaltar outro membro\n` +
-            `› /menulojacoin - Acessa a Lojinha de Coins\n` +
+            `❖ 🎰 CASSINO & APOSTAS\n` +
             `› /dados <valor> - Roda o dado de sorte (1 a 6x)\n` +
             `› /dardo <valor> - Tiro ao alvo de precisão (2x)\n` +
-            `› /velha @rival <valor> - Duelo PvP no Jogo da Velha\n` +
-            `› /slots <valor> - Caça-níqueis com jackpots até 10x\n\n` +
+            `› /slots <valor> - Caça-níqueis com jackpots até 10x\n` +
+            `› /velha @rival <valor> - Duelo PvP no Jogo da Velha\n\n` +
+            `❖ 💼 AÇÕES & PVP\n` +
+            `› /trabalhar - Cumpra seu expediente e receba seu salário\n` +
+            `› /roubar @membro - Tenta assaltar a fortuna de outro membro\n` +
+            `› /minerar - Entre na mina e colete minérios valiosos\n\n` +
+            `❖ 💰 ECONOMIA & LOJINHA\n` +
+            `› /carteira - Consulta sua carteira de Lunar Cents (¢)\n` +
+            `› /minerios - Exibe seu inventário de pedras e minérios\n` +
+            `› /venderminerios <minerio|todos> - Venda seus minérios por coins\n` +
+            `› /menulojacoin - Acessa a Lojinha Oficial da Lunar\n\n` +
             `✦ LUNAR SYSTEM © ✨`;
 
           await safeSendMessage(sock, from, { text: gamesMenu }, { quoted: msg });
@@ -1673,7 +1891,10 @@ async function startBot() {
         if (command === '/carteira') {
           const balance = getBalance(db, senderJid);
           const prof = db.userProfessions[senderJid]?.name || "Desempregado (Use /trabalhar)";
-          await safeSendMessage(sock, from, { text: `💳 *CARTEIRA LUNAR*\n\n👤 *Jogador:* @${userNumber}\n💼 *Profissão:* ${prof}\n💰 *Saldo:* ${balance}¢`, mentions: [senderJid] }, { quoted: msg });
+          const pickaxeId = db.userPickaxes[senderJid] || null;
+          const pickaxeName = db.shopProducts[pickaxeId]?.name || "Enxada Simples";
+
+          await safeSendMessage(sock, from, { text: `💳 *CARTEIRA LUNAR*\n\n👤 *Jogador:* @${userNumber}\n💼 *Profissão:* ${prof}\n🔨 *Picareta Equipada:* ${pickaxeName}\n💰 *Saldo:* ${balance}¢`, mentions: [senderJid] }, { quoted: msg });
           continue;
         }
 
@@ -1694,10 +1915,8 @@ async function startBot() {
           const streak = db.diceWinStreak[senderJid] || 0;
           let diffMultiplier = 1.0;
 
-          // +5% por ganho consecutivo
           diffMultiplier += (streak * 0.05);
 
-          // Escala progressiva por valor apostado (iniciando em 10 ate 1.000.000+ com limite em +70%)
           if (bet >= 10) {
             let betDiff = 0;
             if (bet >= 1000000) {
@@ -1708,7 +1927,6 @@ async function startBot() {
             diffMultiplier += betDiff;
           }
 
-          // Chance padrão do dado caindo em 1 (1 de 6 = 16.6%) ajustado pela dificuldade
           const baseLossChance = 0.1666;
           const finalLossChance = Math.min(0.85, baseLossChance * diffMultiplier);
 
@@ -1963,8 +2181,8 @@ async function startBot() {
           `› /menualuguel - Painel e status de aluguel\n` +
           `› /aluguel - Tabela de preços e planos\n` +
           `› /menuparceria - Sistema de parcerias oficiais\n` +
-          `› /menujogos - Cassino e jogos de aposta\n` +
-          `› /menulojacoin - Lojinha de Lunar Coins\n` +
+          `› /menujogos - Cassino, jogos, ações e mineração\n` +
+          `› /menulojacoin - Lojinha de picaretas e itens\n` +
           `› /menuadm - Painel de administração do grupo\n` +
           `› /sugestao <txt> - Envia sugestão para o dono\n` +
           `› /owner ou /dono - Contato do criador\n` +
