@@ -201,7 +201,7 @@ async function safeSendMessage(sock, jid, content, options = {}) {
   try {
     return await sock.sendMessage(jid, content, options);
   } catch (err) {
-    console.log(`⚠️ Não foi possível enviar mensagem em ${jid}: ${err.message}`);
+    console.log(`⚠️ Não foi possível enviar mensagem em ${jid}:${err.message}`);
     return null;
   }
 }
@@ -826,11 +826,11 @@ async function startBot() {
         }
       }
 
-      // VERIFICAÇÃO GLOBAL DE JOGOS DESLIGADOS (/jogos off)
+      // VERIFICAÇÃO GLOBAL DE JOGOS DESLIGADOS (/jogos off) — SEM EXCEÇÃO PARA O DONO
       const isGameCommand = ['/menujogos', '/carteira', '/dados', '/dardo', '/velha', '/slots', '/trabalhar', '/roubar', '/minerar', '/minerios', '/venderminerios', '/menulojacoin', '/catálogo', '/catalogo', '/comprar'].includes(command);
       if (isGameCommand && isGroup) {
         const settings = db.groupSettings[from] || {};
-        if (!settings.jogos && !isOwner) {
+        if (!settings.jogos) {
           await safeSendMessage(sock, from, { text: "🎮 O sistema de jogos e economia está desligado neste grupo! Para ligar, use `/jogos on`." }, { quoted: msg });
           continue;
         }
@@ -1426,7 +1426,7 @@ async function startBot() {
         }
 
         saveDatabase(db);
-        await safeSendMessage(sock, from, { text: `✅ *APROVAÇÃO EM MASSA CONCLUÍDA!*\nO bot entrou com sucesso em ${successCount} de ${entries.length} grupo(s).` }, { quoted: msg });
+        await safeSendMessage(sock, from, { text: `✅ *APROVAÇÃO EM MASSA CONCLUÍDA!*\nO bot entrou com sucesso em ${successCount} de${entries.length} grupo(s).` }, { quoted: msg });
         continue;
       }
 
@@ -2074,7 +2074,7 @@ async function startBot() {
           }
 
           const slotDisplay = `🎰 *CAÇA-NÍQUEIS LUNAR NEON* 🎰\n\n` +
-            `[ ${s1} | ${s2} | ${s3} ]\n\n`;
+            `[ ${s1} | ${s2} \vert{}${s3} ]\n\n`;
 
           if (multiplier > 0) {
             const netWin = bet * (multiplier - 1);
@@ -2208,7 +2208,7 @@ async function startBot() {
         const ownerName = db.ownerName || "MONTANHA DEV";
 
         const vcard = 'BEGIN:VCARD\n' +
-          'VERSION:3.0\n' +
+          'VERSION:3.0\n` +
           `FN:${ownerName}\n` +
           `ORG:${config.COMPANY_NAME};\n` +
           `TEL;type=CELL;type=VOICE;waid=${ownerNum}:+${ownerNum}\n` +
