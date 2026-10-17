@@ -13,7 +13,6 @@ const ownerInteractiveSessions = new Map();
 const spamTracker = new Map();
 const tictactoeGames = new Map();
 
-// TABELA DE MINÉRRIOS
 const ORES = {
   carvao: { id: "carvao", name: "Carvão", rarity: 0.40, basePrice: 2, icon: "⬛" },
   cobre: { id: "cobre", name: "Cobre", rarity: 0.25, basePrice: 5, icon: "🥉" },
@@ -25,110 +24,27 @@ const ORES = {
   pedra_filosofal: { id: "pedra_filosofal", name: "Pedra Filosofal", rarity: 0.001, basePrice: 1000, icon: "🔮" }
 };
 
-// TABELA DE PICARETAS E PRODUTOS DEFAULT
 const DEFAULT_PRODUCTS = {
-  "trocar_profissao": {
-    id: "trocar_profissao",
-    name: "Trocar de Profissão",
-    desc: "Muda sua profissão para uma nova aleatória com salários melhores ou piores!",
-    price: 150
-  },
-  "picareta_madeira": {
-    id: "picareta_madeira",
-    name: "Picareta de Madeira",
-    desc: "Aumenta seus minérios em 2x o valor encontrado e dá +1 minério extra.",
-    price: 300,
-    multiplier: 2,
-    extraOres: 1,
-    rareBoost: 1.0
-  },
-  "picareta_pedra": {
-    id: "picareta_pedra",
-    name: "Picareta de Pedra",
-    desc: "Multiplica o valor em 3x e dá +2 minérios extras.",
-    price: 800,
-    multiplier: 3,
-    extraOres: 2,
-    rareBoost: 1.2
-  },
-  "picareta_ferro": {
-    id: "picareta_ferro",
-    name: "Picareta de Ferro",
-    desc: "Multiplica o valor em 4x e aumenta a chance de minérios raros.",
-    price: 2000,
-    multiplier: 4,
-    extraOres: 3,
-    rareBoost: 1.5
-  },
-  "picareta_diamante": {
-    id: "picareta_diamante",
-    name: "Picareta de Diamante",
-    desc: "Multiplica o valor em 6x e dá minérios altamente valiosos.",
-    price: 5000,
-    multiplier: 6,
-    extraOres: 4,
-    rareBoost: 2.0
-  },
-  "picareta_aco": {
-    id: "picareta_aco",
-    name: "Picareta de Aço",
-    desc: "Multiplica em 8x o valor dos minérios e concede +5 minérios por expedição.",
-    price: 12000,
-    multiplier: 8,
-    extraOres: 5,
-    rareBoost: 3.0
-  },
-  "picareta_titanium": {
-    id: "picareta_titanium",
-    name: "Picareta de Titanium",
-    desc: "Multiplica em 10x o valor e garante alta presença de Netunerita e Diamantes.",
-    price: 25000,
-    multiplier: 10,
-    extraOres: 6,
-    rareBoost: 4.5
-  },
-  "picareta_dos_deuses": {
-    id: "picareta_dos_deuses",
-    name: "Picareta dos Deuses",
-    desc: "A mais OP! Multiplica por 11x, garante apenas minérios raros e permite minerar 2x seguidas!",
-    price: 60000,
-    multiplier: 11,
-    extraOres: 8,
-    rareBoost: 8.0,
-    doubleMine: true
-  }
+  "trocar_profissao": { id: "trocar_profissao", name: "Trocar de Profissão", desc: "Muda sua profissão para uma nova aleatória com salários melhores ou piores!", price: 150 },
+  "picareta_madeira": { id: "picareta_madeira", name: "Picareta de Madeira", desc: "Aumenta seus minérios em 2x o valor encontrado e dá +1 minério extra.", price: 300, multiplier: 2, extraOres: 1, rareBoost: 1.0 },
+  "picareta_pedra": { id: "picareta_pedra", name: "Picareta de Pedra", desc: "Multiplica o valor em 3x e dá +2 minérios extras.", price: 800, multiplier: 3, extraOres: 2, rareBoost: 1.2 },
+  "picareta_ferro": { id: "picareta_ferro", name: "Picareta de Ferro", desc: "Multiplica o valor em 4x e aumenta a chance de minérios raros.", price: 2000, multiplier: 4, extraOres: 3, rareBoost: 1.5 },
+  "picareta_diamante": { id: "picareta_diamante", name: "Picareta de Diamante", desc: "Multiplica o valor em 6x e dá minérios altamente valiosos.", price: 5000, multiplier: 6, extraOres: 4, rareBoost: 2.0 },
+  "picareta_aco": { id: "picareta_aco", name: "Picareta de Aço", desc: "Multiplica em 8x o valor dos minérios e concede +5 minérios por expedição.", price: 12000, multiplier: 8, extraOres: 5, rareBoost: 3.0 },
+  "picareta_titanium": { id: "picareta_titanium", name: "Picareta de Titanium", desc: "Multiplica em 10x o valor e garante alta presença de Netunerita e Diamantes.", price: 25000, multiplier: 10, extraOres: 6, rareBoost: 4.5 },
+  "picareta_dos_deuses": { id: "picareta_dos_deuses", name: "Picareta dos Deuses", desc: "A mais OP! Multiplica por 11x, garante apenas minérios raros e permite minerar 2x seguidas!", price: 60000, multiplier: 11, extraOres: 8, rareBoost: 8.0, doubleMine: true }
 };
 
 function loadDatabase() {
   if (!fs.existsSync(DB_PATH)) {
     const defaultData = {
-      ownerJid: null,
-      ownerName: "MONTANHA DEV",
-      ownerNumber: FIXED_OWNER_NUMBER,
-      rentedGroups: {},
-      blacklistedUsers: [],
-      customCommands: {},
-      groupSettings: {},
-      partners: {},
-      groupSchedules: {},
-      mutedUsers: {},
-      wallets: {},
-      groupRequests: {},
-      suggestions: {},
-      userProfessions: {},
-      userPickaxes: {},
-      userOres: {},
-      cooldowns: {},
+      ownerJid: null, ownerName: "MONTANHA DEV", ownerNumber: FIXED_OWNER_NUMBER,
+      rentedGroups: {}, blacklistedUsers: [], customCommands: {}, groupSettings: {},
+      partners: {}, groupSchedules: {}, mutedUsers: {}, wallets: {}, groupRequests: {},
+      suggestions: {}, userProfessions: {}, userPickaxes: {}, userOres: {}, cooldowns: {},
       shopProducts: DEFAULT_PRODUCTS,
-      gameConfigs: {
-        minSalary: 50,
-        workCooldownHours: 24,
-        robCooldownHours: 12,
-        mineCooldownHours: 6
-      },
-      diceWinStreak: {},
-      suggestionCounter: 1,
-      requestCounter: 1,
+      gameConfigs: { minSalary: 50, workCooldownHours: 24, robCooldownHours: 12, mineCooldownHours: 6 },
+      diceWinStreak: {}, suggestionCounter: 1, requestCounter: 1,
       rentalPlans: {
         "1_dia": { name: "1 Dia de Aluguel", days: 1, price: 2.00 },
         "7_dias": { name: "7 Dias de Aluguel", days: 7, price: 10.00 },
@@ -201,7 +117,7 @@ async function safeSendMessage(sock, jid, content, options = {}) {
   try {
     return await sock.sendMessage(jid, content, options);
   } catch (err) {
-    console.log(`⚠️ Não foi possível enviar mensagem em ${jid}: ${err.message}`);
+    console.log(`⚠️ Não foi possível enviar mensagem em ${jid}:${err.message}`);
     return null;
   }
 }
@@ -211,7 +127,6 @@ async function generateQrBuffer(text) {
   try {
     return await QRCode.toBuffer(text, { type: 'png', margin: 2, scale: 8 });
   } catch (e) {
-    console.error('Erro ao gerar imagem de QR Code:', e.message);
     return null;
   }
 }
@@ -219,19 +134,7 @@ async function generateQrBuffer(text) {
 function extractPixString(chargeObj) {
   if (!chargeObj) return null;
   if (typeof chargeObj === 'string') return chargeObj;
-  
-  return chargeObj.pix?.brCode || 
-         chargeObj.pix?.code || 
-         chargeObj.brCode || 
-         chargeObj.pixCopiaECola || 
-         chargeObj.code || 
-         chargeObj.pixCode || 
-         chargeObj.qrcode || 
-         chargeObj.payload || 
-         chargeObj.data?.pix?.brCode ||
-         chargeObj.data?.pixCopiaECola || 
-         chargeObj.data?.code || 
-         null;
+  return chargeObj.pix?.brCode || chargeObj.pix?.code || chargeObj.brCode || chargeObj.pixCopiaECola || chargeObj.code || chargeObj.pixCode || chargeObj.qrcode || chargeObj.payload || null;
 }
 
 function extractInviteCode(text) {
@@ -260,35 +163,22 @@ function getRandomOre(rareBoost = 1.0) {
   const oreKeys = Object.keys(ORES);
   let totalWeight = 0;
   const weights = {};
-
   for (const k of oreKeys) {
     let w = ORES[k].rarity;
-    if (k !== 'carvao' && k !== 'cobre') {
-      w = w * rareBoost;
-    }
+    if (k !== 'carvao' && k !== 'cobre') w = w * rareBoost;
     weights[k] = w;
     totalWeight += w;
   }
-
   let rand = Math.random() * totalWeight;
   for (const k of oreKeys) {
-    if (rand < weights[k]) {
-      return ORES[k];
-    }
+    if (rand < weights[k]) return ORES[k];
     rand -= weights[k];
   }
   return ORES.carvao;
 }
 
 function initBackgroundTasks(sock) {
-  setInterval(() => {
-    try {
-      if (global.gc) {
-        global.gc();
-      }
-    } catch (e) {}
-  }, 30 * 60 * 1000);
-
+  setInterval(() => { try { if (global.gc) global.gc(); } catch (e) {} }, 30 * 60 * 1000);
   setInterval(async () => {
     const db = loadDatabase();
     const now = new Date();
@@ -313,10 +203,7 @@ function initBackgroundTasks(sock) {
         if (data.expiresAt && timestampNow >= data.expiresAt) {
           delete mutes[userJid];
           dbUpdated = true;
-          await safeSendMessage(sock, groupJid, { 
-            text: `🔓 O tempo de silenciamento de @${userJid.split('@')[0]} expirou e ele foi desmutado automaticamente!`, 
-            mentions: [userJid] 
-          });
+          await safeSendMessage(sock, groupJid, { text: `🔓 O tempo de silenciamento de @${userJid.split('@')[0]} expirou e ele foi desmutado automaticamente!`, mentions: [userJid] });
         }
       }
     }
@@ -329,14 +216,8 @@ function parseMuteDuration(durationStr) {
   if (!match) return null;
   const value = parseInt(match[1]);
   const unit = match[2].toLowerCase();
-
-  if (unit === 'h') {
-    if (value < 1 || value > 24) return null;
-    return value * 60 * 60 * 1000;
-  } else if (unit === 'd') {
-    if (value < 1 || value > 366) return null;
-    return value * 24 * 60 * 60 * 1000;
-  }
+  if (unit === 'h') return value * 60 * 60 * 1000;
+  if (unit === 'd') return value * 24 * 60 * 60 * 1000;
   return null;
 }
 
@@ -359,15 +240,10 @@ async function startBot() {
   if (!sock.authState.creds.registered) {
     setTimeout(async () => {
       try {
-        console.log('⏳ Aguardando handshake para gerar código de 8 dígitos...');
         await new Promise(resolve => setTimeout(resolve, 8000));
         const pairingCode = await sock.requestPairingCode(config.DEFAULT_BOT_NUMBER);
-        console.log('\n========================================');
-        console.log(`📌 CÓDIGO DE PAREAMENTO LUNAR BOT: ${pairingCode}`);
-        console.log('========================================\n');
-      } catch (err) {
-        console.error('❌ Erro ao solicitar Código de Pareamento:', err.message);
-      }
+        console.log(`\n========================================\n📌 CÓDIGO DE PAREAMENTO: ${pairingCode}\n========================================\n`);
+      } catch (err) {}
     }, 5000);
   }
 
@@ -378,49 +254,16 @@ async function startBot() {
     if (connection === 'close') {
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-      
-      console.log(`⚠️ Conexão fechada (Código: ${statusCode || 'Desconhecido'}). Reconectando automaticamente...`);
-      
       if (shouldReconnect) {
         setTimeout(() => startBot(), 4000);
-      } else {
-        console.log('❌ Sessão encerrada ou logout detectado.');
       }
     } else if (connection === 'open') {
-      console.log(`\n✅ ${config.BOT_NAME} CONECTADO COM SUCESSO VIA LUNAR SYSTEM ENGINE!\n`);
       initBackgroundTasks(sock);
-    }
-  });
-
-  sock.ev.on('group-participants.update', async (update) => {
-    const { id: groupJid, participants, action } = update;
-    db = loadDatabase();
-    const settings = db.groupSettings[groupJid] || {};
-
-    if (action === 'add' && settings.welcome) {
-      for (const participant of participants) {
-        const userNum = participant.split('@')[0];
-        const groupMeta = await sock.groupMetadata(groupJid).catch(() => ({ subject: 'este grupo', participants: [] }));
-        const memberCount = groupMeta.participants.length;
-
-        const welcomeText = `Oii amorzinho! Seja muito bem-vindo(a) ao grupo *${groupMeta.subject}*! 🌙✨\n` +
-          `👤 Novo membro: @${userNum}\n` +
-          `📊 Nosso grupo agora conta com *${memberCount}* fofos reunidos!\n` +
-          `Aproveite sua estadia e siga as regras. Beijinhos da Lunar 💋👋`;
-
-        await safeSendMessage(sock, groupJid, { text: welcomeText, mentions: [participant] }).catch(() => {});
-      }
-    }
-
-    if (action === 'remove' && settings.saida) {
-      const saidaText = `Poxa... Mais um corpinho que parte para outro universo... 🌌💔 O vento sobra frio na Lunar System e sentimos uma tristeza profunda por ver um membro nos deixar... Até logo! 🌙💧`;
-      await safeSendMessage(sock, groupJid, { text: saidaText }).catch(() => {});
     }
   });
 
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
     if (type !== 'notify') return;
-
     for (const msg of messages) {
       if (!msg.message || msg.key.fromMe) continue;
 
@@ -432,478 +275,105 @@ async function startBot() {
       db = loadDatabase();
 
       if (db.blacklistedUsers.includes(senderJid) || db.blacklistedUsers.includes(userNumber)) continue;
-
       if (isGroup && db.mutedUsers[from]?.[senderJid]) {
         await sock.sendMessage(from, { delete: msg.key }).catch(() => {});
         continue;
       }
 
-      const text = msg.message.conversation ||
-                   msg.message.extendedTextMessage?.text ||
-                   msg.message.imageMessage?.caption ||
-                   '';
-
+      const text = msg.message.conversation || msg.message.extendedTextMessage?.text || msg.message.imageMessage?.caption || '';
       const trimmedText = text.trim();
+      const isOwner = db.ownerJid && (senderJid === db.ownerJid || senderJid.split('@')[0] === db.ownerJid.split('@')[0]);
 
-      const isOwner = db.ownerJid && (
-        senderJid === db.ownerJid ||
-        senderJid.split('@')[0] === db.ownerJid.split('@')[0]
-      );
-
-      // RECEBIMENTO DE LINK DE GRUPO NO PRIVADO
       if (!isGroup && !trimmedText.startsWith('/')) {
         const inviteCode = extractInviteCode(trimmedText);
         if (inviteCode) {
           const reqId = String(db.requestCounter || 1).padStart(3, '0');
           db.requestCounter = (db.requestCounter || 1) + 1;
-
           if (!db.groupRequests) db.groupRequests = {};
-          db.groupRequests[reqId] = {
-            link: trimmedText,
-            inviteCode: inviteCode,
-            sender: senderJid,
-            timestamp: Date.now()
-          };
+          db.groupRequests[reqId] = { link: trimmedText, inviteCode: inviteCode, sender: senderJid, timestamp: Date.now() };
           saveDatabase(db);
-
           if (db.ownerJid) {
-            const alertMsg = `🚨 *NOVA SOLICITAÇÃO DE ENTRADA EM GRUPO* 🌙\n\n` +
-              `🆔 *ID:* \`${reqId}\`\n` +
-              `👤 *Enviado por:* @${userNumber}\n` +
-              `🔗 *Link:* ${trimmedText}\n\n` +
-              `👉 Para aprovar este grupo, digite:\n\`/aprovargrupo ${reqId}\`\n` +
-              `Ou aprove todos digitando:\n\`/aprovartodosgrupos\``;
-            
-            await safeSendMessage(sock, db.ownerJid, { text: alertMsg, mentions: [senderJid] });
+            await safeSendMessage(sock, db.ownerJid, { text: `🚨 *NOVA SOLICITAÇÃO*\n🆔 \`${reqId}\`\n👤 @${userNumber}\n🔗 ${trimmedText}\n\nUse \`/aprovargrupo ${reqId}\``, mentions: [senderJid] });
           }
-
-          await safeSendMessage(sock, from, { text: "🌙 Link de grupo recebido! O Dono Supremo foi notificado e avaliará a entrada do bot." }, { quoted: msg });
+          await safeSendMessage(sock, from, { text: "🌙 Link recebido! O Dono Supremo foi notificado." }, { quoted: msg });
           continue;
         }
       }
 
-      // SESSÕES INTERATIVAS DO DONO
-      if (isOwner && ownerInteractiveSessions.has(senderJid)) {
-        const session = ownerInteractiveSessions.get(senderJid);
-
-        if (session.step === 'EDIT_PROD_SELECT') {
-          const prodId = trimmedText.toLowerCase();
-          if (!db.shopProducts[prodId]) {
-            await safeSendMessage(sock, from, { text: "⚠️ ID do produto não encontrado. Tente novamente:" }, { quoted: msg });
-            continue;
-          }
-          session.prodId = prodId;
-          session.step = 'EDIT_PROD_PRICE';
-          ownerInteractiveSessions.set(senderJid, session);
-          await safeSendMessage(sock, from, { text: `✏️ Editando \`${prodId}\`.\n💳 *Digite o Novo Valor em Coins (¢):*` }, { quoted: msg });
-          continue;
-        }
-
-        if (session.step === 'EDIT_PROD_PRICE') {
-          const price = parseInt(trimmedText);
-          if (isNaN(price) || price <= 0) {
-            await safeSendMessage(sock, from, { text: "⚠️ Valor inválido!" }, { quoted: msg });
-            continue;
-          }
-
-          if (db.shopProducts[session.prodId]) {
-            db.shopProducts[session.prodId].price = price;
-            saveDatabase(db);
-          }
-          ownerInteractiveSessions.delete(senderJid);
-          await safeSendMessage(sock, from, { text: `✅ Valor do produto \`${session.prodId}\` alterado para *${price}¢* com sucesso!` }, { quoted: msg });
-          continue;
-        }
-
-        if (session.step === 'ADD_RENT_DAYS') {
-          const days = parseInt(trimmedText);
-          if (isNaN(days) || days <= 0) {
-            await safeSendMessage(sock, from, { text: "⚠️ Informe um número válido de dias (ex: 30)." }, { quoted: msg });
-            continue;
-          }
-
-          const targetGroup = session.targetGroup;
-          const currentExpire = db.rentedGroups[targetGroup]?.expireAt || Date.now();
-          const baseTime = currentExpire > Date.now() ? currentExpire : Date.now();
-          const newExpire = baseTime + (days * 24 * 60 * 60 * 1000);
-
-          db.rentedGroups[targetGroup] = { expireAt: newExpire };
-          saveDatabase(db);
-
-          ownerInteractiveSessions.delete(senderJid);
-          await safeSendMessage(sock, from, { text: `✅ Aluguel de +${days} dias adicionado com sucesso para este grupo! (Acumulado)` }, { quoted: msg });
-          continue;
-        }
-
-        if (session.step === 'ADD_TEMPO_EXTRA') {
-          const hours = parseInt(trimmedText);
-          if (isNaN(hours) || hours <= 0) {
-            await safeSendMessage(sock, from, { text: "⚠️ Informe horas válidas (ex: 24)." }, { quoted: msg });
-            continue;
-          }
-
-          const targetGroup = session.targetGroup;
-          const currentExpire = db.rentedGroups[targetGroup]?.expireAt || Date.now();
-          const baseTime = currentExpire > Date.now() ? currentExpire : Date.now();
-          const newExpire = baseTime + (hours * 60 * 60 * 1000);
-
-          db.rentedGroups[targetGroup] = { expireAt: newExpire };
-          saveDatabase(db);
-
-          ownerInteractiveSessions.delete(senderJid);
-          await safeSendMessage(sock, from, { text: `✅ Tempo extra de +${hours} horas adicionado ao grupo!` }, { quoted: msg });
-          continue;
-        }
-
-        if (session.step === 'GERAR_PAGAMENTO_VALOR') {
-          const valor = parseFloat(trimmedText.replace(',', '.'));
-          if (isNaN(valor) || valor <= 0) {
-            await safeSendMessage(sock, from, { text: "⚠️ Valor inválido." }, { quoted: msg });
-            continue;
-          }
-          ownerInteractiveSessions.delete(senderJid);
-
-          try {
-            await safeSendMessage(sock, from, { text: `⏳ Gerando PIX avulso de R$ ${valor.toFixed(2)} via Lunar Pay Engine...` }, { quoted: msg });
-            const charge = await purincash.createPixCharge(valor, 'Cobrança Dono Lunar');
-            const pixCode = extractPixString(charge);
-
-            if (!pixCode) {
-              await safeSendMessage(sock, from, { text: `❌ Não foi possível extrair o código PIX da resposta da API.` }, { quoted: msg });
-              continue;
-            }
-
-            const qrBuffer = await generateQrBuffer(pixCode);
-            if (qrBuffer) {
-              await safeSendMessage(sock, from, { 
-                image: qrBuffer, 
-                caption: `✅ *PIX GERADO COM SUCESSO!*\n💵 *Valor:* R$ ${valor.toFixed(2)}\n\n📌 *Escaneie o QR Code acima ou use o Copia e Cola abaixo:*` 
-              }, { quoted: msg });
-            }
-
-            await safeSendMessage(sock, from, { text: pixCode }, { quoted: msg });
-          } catch (e) {
-            await safeSendMessage(sock, from, { text: `❌ Erro ao gerar pagamento: ${e.message}` }, { quoted: msg });
-          }
-          continue;
-        }
-
-        if (session.step === 'SACAR_PIX_KEY') {
-          const pixKey = trimmedText;
-          ownerInteractiveSessions.delete(senderJid);
-
-          try {
-            await safeSendMessage(sock, from, { text: "⏳ Processando saque total para a chave PIX..." }, { quoted: msg });
-            await purincash.withdrawAll(pixKey);
-            await safeSendMessage(sock, from, { text: `✅ *SAQUE REALIZADO COM SUCESSO!*` }, { quoted: msg });
-          } catch (e) {
-            await safeSendMessage(sock, from, { text: `❌ Erro no saque: ${e.message}` }, { quoted: msg });
-          }
-          continue;
-        }
-
-        if (session.step === 'PAGAR_PIX_KEY') {
-          session.pixKey = trimmedText;
-          session.step = 'PAGAR_PIX_VALOR';
-          ownerInteractiveSessions.set(senderJid, session);
-          await safeSendMessage(sock, from, { text: "🌙 Digite o valor exato que deseja enviar:" }, { quoted: msg });
-          continue;
-        }
-
-        if (session.step === 'PAGAR_PIX_VALOR') {
-          const amount = parseFloat(trimmedText.replace(',', '.'));
-          if (isNaN(amount) || amount <= 0) {
-            await safeSendMessage(sock, from, { text: "⚠️ Valor inválido." }, { quoted: msg });
-            continue;
-          }
-          const pixKey = session.pixKey;
-          ownerInteractiveSessions.delete(senderJid);
-
-          try {
-            await safeSendMessage(sock, from, { text: "⏳ Efetuando pagamento..." }, { quoted: msg });
-            await purincash.payPixWithMargin(pixKey, amount);
-            
-            const receipt = `🧾 *COMPROVANTE DE PAGAMENTO - LUNAR SYSTEM ©*\n\n` +
-              `🏢 *Emitente:* Lunar System\n` +
-              `💵 *Valor Líquido:* R$ ${amount.toFixed(2)}\n` +
-              `🔑 *Chave PIX:* ${pixKey}\n` +
-              `📌 *Status:* Aprovado e Pago com Sucesso!\n` +
-              `📅 *Data:* ${new Date().toLocaleString('pt-BR')}`;
-
-            await safeSendMessage(sock, from, { text: receipt }, { quoted: msg });
-          } catch (e) {
-            await safeSendMessage(sock, from, { text: `❌ Erro no pagamento: ${e.message}` }, { quoted: msg });
-          }
-          continue;
-        }
-
-        if (session.step === 'ADD_CMD_NAME') {
-          session.newCmdName = trimmedText.toLowerCase();
-          session.step = 'ADD_CMD_TEXT';
-          ownerInteractiveSessions.set(senderJid, session);
-          await safeSendMessage(sock, from, { text: "🌙 Envie o texto que o bot deve responder ao acionar este comando:" }, { quoted: msg });
-          continue;
-        }
-
-        if (session.step === 'ADD_CMD_TEXT') {
-          db.customCommands[session.newCmdName] = trimmedText;
-          saveDatabase(db);
-          ownerInteractiveSessions.delete(senderJid);
-          await safeSendMessage(sock, from, { text: `✅ Comando \`/${session.newCmdName}\` criado com sucesso!` }, { quoted: msg });
-          continue;
-        }
-
-        if (session.step === 'BROADCAST_TEXT') {
-          const textMsg = trimmedText;
-          ownerInteractiveSessions.delete(senderJid);
-
-          const activeGroups = Object.keys(db.rentedGroups).filter(jid => isGroupRented(db.rentedGroups, jid));
-          let count = 0;
-          for (const gJid of activeGroups) {
-            try {
-              await safeSendMessage(sock, gJid, { text: `📢 *COMUNICADO LUNAR SYSTEM ©*\n\n${textMsg}` });
-              count++;
-            } catch {}
-          }
-          await safeSendMessage(sock, from, { text: `✅ Broadcast disparado para ${count} grupos ativos!` }, { quoted: msg });
-          continue;
-        }
-      }
-
-      // JOGO DA VELHA
-      if (isGroup && tictactoeGames.has(from) && /^[1-9]$/.test(trimmedText)) {
-        const game = tictactoeGames.get(from);
-        if (game.turn === senderJid) {
-          const pos = parseInt(trimmedText) - 1;
-          if (game.board[pos] === ' ') {
-            game.board[pos] = game.turn === game.player1 ? '❌' : '⭕';
-            
-            const winPatterns = [
-              [0,1,2], [3,4,5], [6,7,8],
-              [0,3,6], [1,4,7], [2,5,8],
-              [0,4,8], [2,4,6]
-            ];
-            const isWin = winPatterns.some(p => game.board[p[0]] !== ' ' && game.board[p[0]] === game.board[p[1]] && game.board[p[1]] === game.board[p[2]]);
-
-            if (isWin) {
-              const prize = game.bet * 2;
-              updateBalance(db, senderJid, prize);
-              
-              tictactoeGames.delete(from);
-              await safeSendMessage(sock, from, { 
-                text: `🎉 *FIM DE JOGO!* @${senderJid.split('@')[0]} venceu a partida de Jogo da Velha!\n💰 *Prêmio Líquido:* +${prize}¢`,
-                mentions: [senderJid]
-              });
-              continue;
-            }
-
-            if (!game.board.includes(' ')) {
-              updateBalance(db, game.player1, game.bet);
-              updateBalance(db, game.player2, game.bet);
-              tictactoeGames.delete(from);
-              await safeSendMessage(sock, from, { text: "🤝 *EMPATE!* O jogo da velha terminou sem vencedores. O valor das apostas foi devolvido aos jogadores." });
-              continue;
-            }
-
-            game.turn = game.turn === game.player1 ? game.player2 : game.player1;
-            tictactoeGames.set(from, game);
-
-            const boardDisplay = `🎮 *JOGO DA VELHA VALENDO ${game.bet}¢*\n\n` +
-              `1️⃣ ${game.board[0]} | 2️⃣ ${game.board[1]} \vert{} 3️⃣ ${game.board[2]}\n` +
-              `4️⃣ ${game.board[3]} | 5️⃣ ${game.board[4]} \vert{} 6️⃣ ${game.board[5]}\n` +
-              `7️⃣ ${game.board[6]} | 8️⃣ ${game.board[7]} \vert{} 9️⃣ ${game.board[8]}\n\n` +
-              `👉 Vez do jogador: @${game.turn.split('@')[0]} (Responda com o número de 1 a 9)`;
-            await safeSendMessage(sock, from, { text: boardDisplay, mentions: [game.turn] });
-            continue;
-          }
-        }
-      }
-
-      // MODERAÇÃO EM MENSAGENS NORMAIS
-      if (isGroup && !isOwner) {
-        const settings = db.groupSettings[from] || {};
-
-        const now = Date.now();
-        if (!spamTracker.has(senderJid)) spamTracker.set(senderJid, []);
-        const userMsgs = spamTracker.get(senderJid).filter(t => now - t < 3000);
-        userMsgs.push(now);
-        spamTracker.set(senderJid, userMsgs);
-
-        if (userMsgs.length >= 5 && settings.antispam) {
-          await sock.sendMessage(from, { delete: msg.key }).catch(() => {});
-          await sock.groupParticipantsUpdate(from, [senderJid], 'demote').catch(() => {});
-          await safeSendMessage(sock, from, { text: `⚠️ @${userNumber} foi mutado por motivo de SPAM!`, mentions: [senderJid] });
-          continue;
-        }
-
-        const hasLink = /https?:\/\/|www\.|t\.me|wa\.me|discord\.gg|tiktok\.com|youtube\.com|instagram\.com|\.com/i.test(text);
-
-        if (hasLink) {
-          if (settings.modoparceria) {
-            const todayStr = new Date().toISOString().split('T')[0];
-            if (!db.partners[from]) db.partners[from] = {};
-            const partnerData = db.partners[from][senderJid];
-
-            if (partnerData) {
-              if (partnerData.resetDate !== todayStr) {
-                partnerData.used = 0;
-                partnerData.resetDate = todayStr;
-              }
-              if (partnerData.used < partnerData.limit) {
-                partnerData.used++;
-                saveDatabase(db);
-                continue;
-              } else {
-                await sock.sendMessage(from, { delete: msg.key }).catch(() => {});
-                await safeSendMessage(sock, from, { text: `⚠️ @${userNumber}, você excedeu a sua quantidade diária de links permitidos como parceiro!`, mentions: [senderJid] });
-                continue;
-              }
-            } else {
-              await sock.sendMessage(from, { delete: msg.key }).catch(() => {});
-              await safeSendMessage(sock, from, { text: `⚠️ @${userNumber}, para enviar links neste grupo é necessário ter parceria oficial cadastrada! Digite */menuparceria* para saber mais.`, mentions: [senderJid] });
-              continue;
-            }
-          }
-
-          if (settings.antilinkgeral) {
-            await sock.sendMessage(from, { delete: msg.key }).catch(() => {});
-            await safeSendMessage(sock, from, { text: `⚠️ Links são estritamente proibidos neste grupo por @${userNumber}!`, mentions: [senderJid] });
-            continue;
-          }
-          if (settings.antilink2) {
-            await sock.sendMessage(from, { delete: msg.key }).catch(() => {});
-            await sock.groupParticipantsUpdate(from, [senderJid], 'remove').catch(() => {});
-            await safeSendMessage(sock, from, { text: `🚫 @${userNumber} foi banido por enviar link proibido!`, mentions: [senderJid] });
-            continue;
-          }
-          if (settings.antilink1) {
-            await sock.sendMessage(from, { delete: msg.key }).catch(() => {});
-            await safeSendMessage(sock, from, { text: `⚠️ Proibido envio de links neste grupo, @${userNumber}!`, mentions: [senderJid] });
-            continue;
-          }
-        }
-      }
-
-      // DECLARAÇÃO DOS COMANDOS
       const command = trimmedText.split(' ')[0].toLowerCase();
       const args = trimmedText.split(' ').slice(1);
 
-      // RESPOSTA NO PRIVADO
-      if (!isGroup && !isOwner) {
-        const inviteCode = extractInviteCode(trimmedText);
-        if (!inviteCode && command !== '/owner' && command !== '/dono' && command !== '/mtn') {
-          const pvText = "Oii amorzinho 🥰, sou a lunar 🌙 o bot de automação da Lunar System ©, não respondo privado pois fui feito para grupos, caso aja dúvidas digite /OWNER e entre em contato com meu criador. beijinhos 💋👋\n\n" +
-            "Caso queira que o nosso bot participe do seu grupo, basta enviar o link de convite do seu grupo neste chat e aguarde que a nossa equipe de staff avaliará a possibilidade e aceitará a entrada da Lunar no seu grupo! ✨🌙";
-          
-          await safeSendMessage(sock, from, { text: pvText }, { quoted: msg });
-          continue;
-        }
-      }
-
-      // REGRA ESTRITA DE PREFIXO
       if (!trimmedText.startsWith('/')) continue;
-
-      const commandNotFoundMsg = "❌ Comando não encontrado! Digite /menu para ver a lista de comandos.";
+      const commandNotFoundMsg = "❌ Comando não encontrado! Digite /menu para ver a lista.";
 
       if (command === '/mtn') {
         db.ownerJid = senderJid;
         db.ownerNumber = FIXED_OWNER_NUMBER;
         db.ownerName = "MONTANHA DEV";
         saveDatabase(db);
-
-        await safeSendMessage(sock, from, { text: `👑 *DONO SUPREMO CONFIGURADO COM SUCESSO!*\n\n👤 *Nome:* MONTANHA DEV\n📱 *Número:* +${FIXED_OWNER_NUMBER}` }, { quoted: msg });
+        await safeSendMessage(sock, from, { text: `👑 *DONO CONFIGURADO COM SUCESSO!*` }, { quoted: msg });
         continue;
       }
 
       const isFreeCommand = ['/menualuguel', '/aluguel', '/alugar', '/menuadm', '/menu', '/ping', '/owner', '/dono', '/mtn', '/menuparceria', '/menujogos', '/menudono', '/sugestao', '/listsugestoes', '/upsugestao', '/rmsugestao', '/menulojacoin', '/catálogo', '/catalogo', '/carteira', '/comprar', '/trabalhar', '/roubar', '/minerar', '/minerios', '/venderminerios'].includes(command);
 
       if (isGroup && !isOwner && !isFreeCommand) {
-        const hasRent = isGroupRented(db.rentedGroups, from);
-
-        if (!hasRent) {
-          await safeSendMessage(sock, from, { text: "Oii meus amores! 🥰 O aluguel deste grupo ainda não foi ativado! 🌙 Digite /menualuguel para ver os planos e ativar sua assinatura. Beijinhos 💋👋" }, { quoted: msg });
+        if (!isGroupRented(db.rentedGroups, from)) {
+          await safeSendMessage(sock, from, { text: "Oii amorzinho! 🥰 Aluguel deste grupo não ativado. Digite /menualuguel." }, { quoted: msg });
           continue;
         }
       }
 
-      // SISTEMA DE MINERAÇÃO
       if (command === '/minerar') {
         const now = Date.now();
-        const cooldownHours = db.gameConfigs?.mineCooldownHours || 6;
-        const cooldownMs = cooldownHours * 60 * 60 * 1000;
+        const cooldownMs = (db.gameConfigs?.mineCooldownHours || 6) * 3600000;
         const lastMine = db.cooldowns[`mine_${senderJid}`] || 0;
-
         if (now - lastMine < cooldownMs) {
-          const remainingMs = cooldownMs - (now - lastMine);
-          const remainingHours = Math.ceil(remainingMs / (1000 * 60 * 60));
-          await safeSendMessage(sock, from, { text: `⛏️ Seus braços estão cansados! Aguarde *${remainingHours}h* para entrar na mina novamente.` }, { quoted: msg });
+          const remH = Math.ceil((cooldownMs - (now - lastMine)) / 3600000);
+          await safeSendMessage(sock, from, { text: `⛏️ Braços cansados! Aguarde *${remH}h* para voltar à mina.` }, { quoted: msg });
           continue;
         }
 
-        const pickaxeId = db.userPickaxes[senderJid] || null;
-        const pickaxe = db.shopProducts[pickaxeId] || null;
-
-        let baseAmount = Math.floor(Math.random() * 10) + 1;
-        let rareBoost = pickaxe?.rareBoost || 1.0;
-        if (pickaxe?.extraOres) baseAmount += pickaxe.extraOres;
-
+        const pickaxe = db.shopProducts[db.userPickaxes[senderJid] || ''] || null;
+        let baseAmount = Math.floor(Math.random() * 10) + 1 + (pickaxe?.extraOres || 0);
         if (!db.userOres[senderJid]) db.userOres[senderJid] = {};
 
         const minedSummary = {};
-        const loops = pickaxe?.doubleMine ? 2 : 1;
-
-        for (let l = 0; l < loops; l++) {
+        for (let l = 0; l < (pickaxe?.doubleMine ? 2 : 1); l++) {
           for (let i = 0; i < baseAmount; i++) {
-            const ore = getRandomOre(rareBoost);
+            const ore = getRandomOre(pickaxe?.rareBoost || 1.0);
             db.userOres[senderJid][ore.id] = (db.userOres[senderJid][ore.id] || 0) + 1;
             minedSummary[ore.name] = (minedSummary[ore.name] || 0) + 1;
           }
         }
-
         db.cooldowns[`mine_${senderJid}`] = now;
         saveDatabase(db);
 
-        let report = `⛏️ *EXPEDIÇÃO DE MINERAÇÃO CONCLUÍDA!* 🌌\n\n` +
-          `🔨 *Picareta Utilizada:* ${pickaxe ? pickaxe.name : "Mãos Nua / Enxada Simples"}\n` +
-          `📦 *Minérios Encontrados:*\n`;
-
-        for (const [oName, count] of Object.entries(minedSummary)) {
-          report += `› ${count}x${oName}\n`;
-        }
-
-        report += `\n👉 Use \`/minerios\` para ver seu inventário ou \`/venderminerios todos\` para lucrar!`;
+        let report = `⛏️ *MINERAÇÃO CONCLUÍDA!*\n🔨 ${pickaxe ? pickaxe.name : "Enxada Simples"}\n\n`;
+        for (const [oName, count] of Object.entries(minedSummary)) report += `› ${count}x${oName}\n`;
         await safeSendMessage(sock, from, { text: report }, { quoted: msg });
         continue;
       }
 
       if (command === '/minerios') {
         const ores = db.userOres[senderJid] || {};
-        const entries = Object.entries(ores).filter(([_, count]) => count > 0);
-
+        const entries = Object.entries(ores).filter(([_, c]) => c > 0);
         if (entries.length === 0) {
-          await safeSendMessage(sock, from, { text: "📦 Seu inventário de minérios está totalmente vazio! Use `/minerar` para obter minérios." }, { quoted: msg });
+          await safeSendMessage(sock, from, { text: "📦 Inventário de minérios vazio! Use `/minerar`." }, { quoted: msg });
           continue;
         }
-
-        let invText = `📦 *INVENTÁRIO DE MINÉRIOS DE @${userNumber}* 🌙\n\n`;
-        let totalValueEstimated = 0;
-
-        const pickaxeId = db.userPickaxes[senderJid] || null;
-        const pickaxe = db.shopProducts[pickaxeId] || null;
-        const multiplier = pickaxe?.multiplier || 1;
-
-        for (const [oreId, count] of entries) {
-          const oreInfo = ORES[oreId];
-          if (oreInfo) {
-            const val = oreInfo.basePrice * count * multiplier;
-            totalValueEstimated += val;
-            invText += `${oreInfo.icon} *${oreInfo.name}:* ${count}x (Valor estimado:${val}¢)\n`;
+        let invText = `📦 *INVENTÁRIO DE @${userNumber}*\n\n`;
+        const mult = db.shopProducts[db.userPickaxes[senderJid] || '']?.multiplier || 1;
+        let totalVal = 0;
+        for (const [id, count] of entries) {
+          const ore = ORES[id];
+          if (ore) {
+            const val = ore.basePrice * count * mult;
+            totalVal += val;
+            invText += `${ore.icon}${ore.name}: ${count}x (${val}¢)\n`;
           }
         }
-
-        invText += `\n💰 *Valor Total Estimado:* ${totalValueEstimated}¢\n` +
-          `👉 Para vender, use: \`/venderminerios <minerio>\` ou \`/venderminerios todos\``;
-
+        invText += `\n💰 Total Estimado: ${totalVal}¢\nUse \`/venderminerios todos\``;
         await safeSendMessage(sock, from, { text: invText, mentions: [senderJid] }, { quoted: msg });
         continue;
       }
@@ -911,1306 +381,233 @@ async function startBot() {
       if (command === '/venderminerios') {
         const targetOre = args[0]?.toLowerCase();
         const userOres = db.userOres[senderJid] || {};
+        const mult = db.shopProducts[db.userPickaxes[senderJid] || '']?.multiplier || 1;
 
         if (!targetOre) {
-          await safeSendMessage(sock, from, { text: "⚠️ Informe o minério a vender ou use `/venderminerios todos`. Exemplo: `/venderminerios diamante`" }, { quoted: msg });
+          await safeSendMessage(sock, from, { text: "⚠️ Use `/venderminerios todos` ou `/venderminerios diamante`" }, { quoted: msg });
           continue;
         }
-
-        const pickaxeId = db.userPickaxes[senderJid] || null;
-        const pickaxe = db.shopProducts[pickaxeId] || null;
-        const multiplier = pickaxe?.multiplier || 1;
 
         if (targetOre === 'todos') {
-          let totalEarned = 0;
-          let itemCount = 0;
-
-          for (const [oreId, count] of Object.entries(userOres)) {
-            if (count > 0 && ORES[oreId]) {
-              const val = ORES[oreId].basePrice * count * multiplier;
-              totalEarned += val;
-              itemCount += count;
-              db.userOres[senderJid][oreId] = 0;
+          let totalEarned = 0, countTot = 0;
+          for (const [id, count] of Object.entries(userOres)) {
+            if (count > 0 && ORES[id]) {
+              totalEarned += ORES[id].basePrice * count * mult;
+              countTot += count;
+              db.userOres[senderJid][id] = 0;
             }
           }
-
           if (totalEarned === 0) {
-            await safeSendMessage(sock, from, { text: "⚠️ Você não possui minérios para vender no momento!" }, { quoted: msg });
+            await safeSendMessage(sock, from, { text: "⚠️ Nenhum minério para vender!" }, { quoted: msg });
             continue;
           }
-
           updateBalance(db, senderJid, totalEarned);
           saveDatabase(db);
-
-          await safeSendMessage(sock, from, { text: `💰 *VENDA CONCLUÍDA!* Você vendeu ${itemCount} minérios e faturou *+${totalEarned}¢*!` }, { quoted: msg });
+          await safeSendMessage(sock, from, { text: `💰 Vendeu ${countTot} minérios e faturou *+${totalEarned}¢*!` }, { quoted: msg });
           continue;
         }
 
-        // Venda individual
         const oreKey = Object.keys(ORES).find(k => k === targetOre || ORES[k].name.toLowerCase() === targetOre);
         if (!oreKey || !userOres[oreKey] || userOres[oreKey] <= 0) {
-          await safeSendMessage(sock, from, { text: `⚠️ Você não possui minérios do tipo \`${targetOre}\` para vender.` }, { quoted: msg });
+          await safeSendMessage(sock, from, { text: "⚠️ Você não possui este minério." }, { quoted: msg });
           continue;
         }
-
         const count = userOres[oreKey];
-        const earned = ORES[oreKey].basePrice * count * multiplier;
+        const earned = ORES[oreKey].basePrice * count * mult;
         db.userOres[senderJid][oreKey] = 0;
-
         updateBalance(db, senderJid, earned);
         saveDatabase(db);
-
-        await safeSendMessage(sock, from, { text: `💰 *VENDA REALIZADA!* Você vendeu ${count}x ${ORES[oreKey].name} e recebeu *+${earned}¢*!` }, { quoted: msg });
+        await safeSendMessage(sock, from, { text: `💰 Vendeu ${count}x ${ORES[oreKey].name} por *+${earned}¢*!` }, { quoted: msg });
         continue;
       }
 
-      // LOJINHA DE COINS
       if (command === '/menulojacoin') {
-        const shopMenu = `🛍️ *LOJINHA LUNAR COINS — LUNAR SYSTEM ©* 🌙\n\n` +
-          `❖ 🛒 MENU DE COMPRAS\n` +
-          `› /carteira - Consulta seu saldo em Lunar Cents (¢)\n` +
-          `› /catálogo - Exibe as picaretas e itens da loja\n` +
-          `› /minerios - Exibe seus minérios coletados\n` +
-          `› /venderminerios <minerio|todos> - Vende seus minérios\n` +
-          `› /comprar <id_produto> - Realiza a compra do produto desejado\n\n` +
-          `✦ LUNAR SYSTEM © ✨`;
-
-        await safeSendMessage(sock, from, { text: shopMenu }, { quoted: msg });
+        await safeSendMessage(sock, from, { text: `🛍️ *LOJINHA LUNAR COINS*\n\n› /carteira - Ver saldo\n› /catálogo - Ver produtos e picaretas\n› /minerios - Ver minérios\n› /venderminerios todos - Vender minérios\n› /comprar <id> - Comprar item` }, { quoted: msg });
         continue;
       }
 
       if (command === '/catálogo' || command === '/catalogo') {
-        const prods = Object.values(db.shopProducts || {});
-        if (prods.length === 0) {
-          await safeSendMessage(sock, from, { text: "🛍️ A Lojinha de Coins está sem produtos cadastrados no momento!" }, { quoted: msg });
-          continue;
+        let catText = `🛍️ *CATÁLOGO LUNAR COIN*\n\n`;
+        for (const p of Object.values(db.shopProducts)) {
+          catText += `📦 *${p.name}* (\`${p.id}\`)\n📋 ${p.desc}\n💳 *${p.price}¢*\n👉 \`/comprar ${p.id}\`\n──────────────────\n`;
         }
-
-        let catText = `🛍️ *CATÁLOGO OFICIAL LUNAR COIN (¢)* 🌙\n\n`;
-        for (const p of prods) {
-          catText += `Produto 📦: *${p.name}* (ID: \`${p.id}\`)\n` +
-            `Descrição 📋: ${p.desc}\n` +
-            `Valor 💳: *${p.price}¢*\n\n` +
-            `👉 Use \`/comprar ${p.id}\` para comprar 🛒\n` +
-            `──────────────────────────\n`;
-        }
-
         await safeSendMessage(sock, from, { text: catText }, { quoted: msg });
         continue;
       }
 
       if (command === '/comprar') {
-        const prodId = args[0]?.toLowerCase();
-        const prod = db.shopProducts[prodId];
-
+        const prod = db.shopProducts[args[0]?.toLowerCase()];
         if (!prod) {
-          await safeSendMessage(sock, from, { text: "⚠️ Produto não encontrado! Digite `/catálogo` para ver os produtos válidos." }, { quoted: msg });
+          await safeSendMessage(sock, from, { text: "⚠️ Produto não encontrado! Use `/catálogo`." }, { quoted: msg });
           continue;
         }
-
-        const userBal = getBalance(db, senderJid);
-        if (userBal < prod.price) {
-          await safeSendMessage(sock, from, { text: `⚠️ Saldo insuficiente! O produto custa *${prod.price}¢* e você possui *${userBal}¢*.` }, { quoted: msg });
+        if (getBalance(db, senderJid) < prod.price) {
+          await safeSendMessage(sock, from, { text: `⚠️ Saldo insuficiente! Custa ${prod.price}¢.` }, { quoted: msg });
           continue;
         }
-
         updateBalance(db, senderJid, -prod.price);
 
-        if (prodId === 'trocar_profissao') {
+        if (args[0] === 'trocar_profissao') {
           const newProf = getRandomProfession();
           db.userProfessions[senderJid] = newProf;
           saveDatabase(db);
-
-          await safeSendMessage(sock, from, { text: `🎉 *COMPRA REALIZADA COM SUCESSO!* 🛒\n\nVocê adquiriu *${prod.name}* por *${prod.price}¢*!\n\n💼 *Sua nova profissão é:* **${newProf.name}**!\nMultiplicador salarial: *${newProf.multiplier}x*` }, { quoted: msg });
+          await safeSendMessage(sock, from, { text: `🎉 Nova profissão: **${newProf.name}** (${newProf.multiplier}x)!` }, { quoted: msg });
           continue;
         }
-
-        if (prodId.startsWith('picareta_')) {
-          db.userPickaxes[senderJid] = prodId;
+        if (args[0].startsWith('picareta_')) {
+          db.userPickaxes[senderJid] = args[0];
           saveDatabase(db);
-
-          await safeSendMessage(sock, from, { text: `🎉 *PICARETA ADQUIRIDA COM SUCESSO!* 🔨\n\nVocê comprou a *${prod.name}* por *${prod.price}¢*!\n\n✨ *Benefício Ativo:* Multiplicador de ${prod.multiplier}x no valor dos minérios e maior taxa de raridade em /minerar!` }, { quoted: msg });
+          await safeSendMessage(sock, from, { text: `🎉 Picareta *${prod.name}* equipada com sucesso!` }, { quoted: msg });
           continue;
         }
-
-        await safeSendMessage(sock, from, { text: `🎉 *COMPRA REALIZADA COM SUCESSO!* 🛒\n\nVocê comprou *${prod.name}* por *${prod.price}¢*! Aproveite seu benefício.` }, { quoted: msg });
+        await safeSendMessage(sock, from, { text: `🎉 Compra de *${prod.name}* efetuada com sucesso!` }, { quoted: msg });
         continue;
       }
 
-      // NOVO SISTEMA TRABALHAR & ROUBAR
       if (command === '/trabalhar') {
         const now = Date.now();
-        const cooldownHours = db.gameConfigs?.workCooldownHours || 24;
-        const cooldownMs = cooldownHours * 60 * 60 * 1000;
-        const lastWork = db.cooldowns[`work_${senderJid}`] || 0;
-
-        if (now - lastWork < cooldownMs) {
-          const remainingMs = cooldownMs - (now - lastWork);
-          const remainingHours = Math.ceil(remainingMs / (1000 * 60 * 60));
-          await safeSendMessage(sock, from, { text: `💼 *CLT INFORMA:* Você já trabalhou demais e cumpriu suas 8 hrs de trabalho de acordo com a CLT! Não há mais expediente 6x1 por hoje. Volte daqui a *${remainingHours}h* para trabalhar novamente! 🛑` }, { quoted: msg });
+        const cooldownMs = (db.gameConfigs?.workCooldownHours || 24) * 3600000;
+        if (now - (db.cooldowns[`work_${senderJid}`] || 0) < cooldownMs) {
+          await safeSendMessage(sock, from, { text: `💼 CLT INFORMA: Você já cumpriu suas 8h de trabalho hoje. Volte amanhã!` }, { quoted: msg });
           continue;
         }
-
-        if (!db.userProfessions[senderJid]) {
-          db.userProfessions[senderJid] = getRandomProfession();
-        }
-
+        if (!db.userProfessions[senderJid]) db.userProfessions[senderJid] = getRandomProfession();
         const prof = db.userProfessions[senderJid];
-        const baseSalary = db.gameConfigs?.minSalary || 50;
-        const finalSalary = Math.floor(baseSalary * prof.multiplier);
-
-        updateBalance(db, senderJid, finalSalary);
+        const salary = Math.floor((db.gameConfigs?.minSalary || 50) * prof.multiplier);
+        updateBalance(db, senderJid, salary);
         db.cooldowns[`work_${senderJid}`] = now;
         saveDatabase(db);
-
-        await safeSendMessage(sock, from, { text: `🛠️ *DIA DE TRABALHO CONCLUÍDO!*\n\n💼 *Profissão:* ${prof.name}\n💰 *Salário Recebido:* +${finalSalary}¢ (Base: ${baseSalary}¢)\n\nVolte amanhã para cumprir seu próximo expediente!` }, { quoted: msg });
+        await safeSendMessage(sock, from, { text: `🛠️ Trabalho concluído! Profissão: ${prof.name} | Salário: +${salary}¢` }, { quoted: msg });
         continue;
       }
 
       if (command === '/roubar') {
-        const targetUser = msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
-        if (!targetUser) {
-          await safeSendMessage(sock, from, { text: "⚠️ Marque quem você deseja roubar: `/roubar @mencao`" }, { quoted: msg });
+        const target = msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+        if (!target || target === senderJid) {
+          await safeSendMessage(sock, from, { text: "⚠️ Marque alguém para roubar: `/roubar @mencao`" }, { quoted: msg });
           continue;
         }
-
-        if (targetUser === senderJid) {
-          await safeSendMessage(sock, from, { text: "⚠️ Você não pode roubar a si mesmo!" }, { quoted: msg });
-          continue;
-        }
-
         const now = Date.now();
-        const cooldownHours = db.gameConfigs?.robCooldownHours || 12;
-        const cooldownMs = cooldownHours * 60 * 60 * 1000;
-        const lastRob = db.cooldowns[`rob_${senderJid}`] || 0;
-
-        if (now - lastRob < cooldownMs) {
-          const remainingMs = cooldownMs - (now - lastRob);
-          const remainingHours = Math.ceil(remainingMs / (1000 * 60 * 60));
-          await safeSendMessage(sock, from, { text: `🥷 A polícia está na sua cola! Aguarde *${remainingHours}h* para tentar um novo assalto.` }, { quoted: msg });
+        const cooldownMs = (db.gameConfigs?.robCooldownHours || 12) * 3600000;
+        if (now - (db.cooldowns[`rob_${senderJid}`] || 0) < cooldownMs) {
+          await safeSendMessage(sock, from, { text: "🥷 A polícia está na cola! Aguarde o cooldown." }, { quoted: msg });
           continue;
         }
-
-        const victimBal = getBalance(db, targetUser);
-        if (victimBal < 25) {
-          await safeSendMessage(sock, from, { text: `🥷 A vítima é tão pobre que nem compensa o assalto (Saldo: *${victimBal}¢*). O mínimo para roubo é 25¢!` }, { quoted: msg });
+        const vBal = getBalance(db, target);
+        if (vBal < 25) {
+          await safeSendMessage(sock, from, { text: "🥷 Vítima sem saldo suficiente (mínimo 25¢)." }, { quoted: msg });
           continue;
         }
-
-        const success = Math.random() <= 0.50;
-
-        if (success) {
-          const maxStolen = Math.floor(victimBal * 0.70);
-          const stolenAmount = Math.floor(Math.random() * (maxStolen - 25 + 1)) + 25;
-
-          updateBalance(db, targetUser, -stolenAmount);
-          updateBalance(db, senderJid, stolenAmount);
+        if (Math.random() <= 0.50) {
+          const stolen = Math.floor(Math.random() * (Math.floor(vBal * 0.70) - 25 + 1)) + 25;
+          updateBalance(db, target, -stolen);
+          updateBalance(db, senderJid, stolen);
           db.cooldowns[`rob_${senderJid}`] = now;
           saveDatabase(db);
-
-          await safeSendMessage(sock, from, { text: `🥷 *ASSALTO BEM SUCEDIDO!*\n\n💰 @${senderJid.split('@')[0]} passou a perna em @${targetUser.split('@')[0]} e roubou *${stolenAmount}¢*!`, mentions: [senderJid, targetUser] });
+          await safeSendMessage(sock, from, { text: `🥷 Roubou *${stolen}¢* de @${target.split('@')[0]}!`, mentions: [target] });
         } else {
-          const penalty = Math.min(20, getBalance(db, senderJid));
-          updateBalance(db, senderJid, -penalty);
+          const pen = Math.min(20, getBalance(db, senderJid));
+          updateBalance(db, senderJid, -pen);
           db.cooldowns[`rob_${senderJid}`] = now;
           saveDatabase(db);
-
-          await safeSendMessage(sock, from, { text: `🚨 *MICO!* O assalto deu errado e você foi pego em flagrante! Pagou *${penalty}¢* de fiança.`, mentions: [senderJid] });
+          await safeSendMessage(sock, from, { text: `🚨 Pego em flagrante! Pagou ${pen}¢ de fiança.` });
         }
         continue;
       }
 
-      // COMANDOS DE GERENCIAMENTO DE JOGOS NO MENU ADM
-      if (isGroup && (command === '/resetcoinsjogos' || command === '/editartempojogo' || command === '/editarsalariominimojogo')) {
-        const groupMetadata = await sock.groupMetadata(from).catch(() => null);
-        const participants = groupMetadata?.participants || [];
-        const senderParticipant = participants.find(p => p.id === senderJid);
-        const isSenderAdmin = senderParticipant?.admin === 'admin' || senderParticipant?.admin === 'superadmin';
-
-        if (!isSenderAdmin && !isOwner) {
-          await safeSendMessage(sock, from, { text: "⚠️ Apenas administradores do grupo podem usar este comando!" }, { quoted: msg });
-          continue;
-        }
-
-        if (command === '/resetcoinsjogos') {
-          const target = args[0]?.toLowerCase();
-          const mentioned = msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
-
-          if (target === 'all') {
-            for (const p of participants) {
-              db.wallets[p.id] = 10;
-            }
-            saveDatabase(db);
-            await safeSendMessage(sock, from, { text: "🔄 *RESET DE COINS CONCLUÍDO!* O saldo de todos os membros do grupo foi resetado para *10¢*." });
-            continue;
-          }
-
-          if (mentioned) {
-            db.wallets[mentioned] = 10;
-            saveDatabase(db);
-            await safeSendMessage(sock, from, { text: `🔄 Saldo do membro @${mentioned.split('@')[0]} resetado para *10¢*!`, mentions: [mentioned] });
-            continue;
-          }
-
-          await safeSendMessage(sock, from, { text: "⚠️ Uso correto: `/resetcoinsjogos @mencao` ou `/resetcoinsjogos all`" }, { quoted: msg });
-          continue;
-        }
-
-        if (command === '/editartempojogo') {
-          const hours = parseInt(args[0]);
-          if (isNaN(hours) || hours <= 0) {
-            await safeSendMessage(sock, from, { text: "⚠️ Informe um tempo válido em horas! Exemplo: `/editartempojogo 1`" }, { quoted: msg });
-            continue;
-          }
-          if (!db.gameConfigs) db.gameConfigs = {};
-          db.gameConfigs.workCooldownHours = hours;
-          saveDatabase(db);
-          await safeSendMessage(sock, from, { text: `⏰ Cooldown de trabalho alterado com sucesso para *${hours}h*!` });
-          continue;
-        }
-
-        if (command === '/editarsalariominimojogo') {
-          const val = parseInt(args[0]);
-          if (isNaN(val) || val <= 0) {
-            await safeSendMessage(sock, from, { text: "⚠️ Informe um valor válido! Exemplo: `/editarsalariominimojogo 50`" }, { quoted: msg });
-            continue;
-          }
-          if (!db.gameConfigs) db.gameConfigs = {};
-          db.gameConfigs.minSalary = val;
-          saveDatabase(db);
-          await safeSendMessage(sock, from, { text: `💵 Salário Mínimo do jogo ajustado para *${val}¢* com sucesso!` });
-          continue;
-        }
-      }
-
-      // COMANDOS DO DONO PARA GERENCIAR LOJINHA DE COIN
-      if (command === '/editprodutocoin' && isOwner) {
-        ownerInteractiveSessions.set(senderJid, { step: 'EDIT_PROD_SELECT' });
-        await safeSendMessage(sock, from, { text: "✏️ Digite o ID do produto que deseja editar o valor:" }, { quoted: msg });
+      if (command === '/menujogos') {
+        const gamesMenu = `🤖 LUNAR SYSTEM ©\n\n❖ 🎰 CASSINO & APOSTAS\n› /dados <valor>\n› /dardo <valor>\n› /slots <valor>\n› /velha @rival <valor>\n\n❖ 💼 AÇÕES & PVP\n› /trabalhar\n› /roubar @mencao\n› /minerar\n\n❖ 💰 ECONOMIA & LOJINHA\n› /carteira\n› /minerios\n› /venderminerios todos\n› /menulojacoin`;
+        await safeSendMessage(sock, from, { text: gamesMenu }, { quoted: msg });
         continue;
       }
 
-      // SISTEMA DE SUGESTÕES
-      if (command === '/sugestao') {
-        const suggestionText = args.join(' ');
-        if (!suggestionText) {
-          await safeSendMessage(sock, from, { text: "⚠️ Escreva sua sugestão após o comando. Exemplo: `/sugestao Adicionar o comando de cassino em dobro`" }, { quoted: msg });
-          continue;
-        }
-
-        if (!db.suggestions) db.suggestions = {};
-        const sugId = db.suggestionCounter || 1;
-        db.suggestionCounter = sugId + 1;
-
-        db.suggestions[sugId] = {
-          id: sugId,
-          text: suggestionText,
-          sender: senderJid,
-          senderNumber: userNumber,
-          timestamp: Date.now()
-        };
-        saveDatabase(db);
-
-        await safeSendMessage(sock, from, { text: `✅ Sugestão enviada com sucesso ao Dono Supremo! (ID: \`${sugId}\`) 🌙` }, { quoted: msg });
-
-        if (db.ownerJid) {
-          const ownerAlert = `💡 *NOVA SUGESTÃO RECEBIDA - LUNAR SYSTEM ©*\n\n` +
-            `🆔 *ID da Sugestão:* \`${sugId}\`\n` +
-            `👤 *Usuário:* @${userNumber}\n` +
-            `📝 *Sugestão:* ${suggestionText}\n\n` +
-            `👉 Para aprovar e anunciar, digite:\n\`/upsugestao ${sugId}\`\n` +
-            `👉 Para remover, digite:\n\`/rmsugestao ${sugId}\``;
-
-          await safeSendMessage(sock, db.ownerJid, { text: ownerAlert, mentions: [senderJid] });
-        }
+      if (command === '/carteira') {
+        const bal = getBalance(db, senderJid);
+        const prof = db.userProfessions[senderJid]?.name || "Desempregado";
+        const pick = db.shopProducts[db.userPickaxes[senderJid] || '']?.name || "Enxada Simples";
+        await safeSendMessage(sock, from, { text: `💳 *CARTEIRA*\n👤 @${userNumber}\n💼 ${prof}\n🔨 ${pick}\n💰 Saldo: ${bal}¢`, mentions: [senderJid] }, { quoted: msg });
         continue;
       }
 
-      if (command === '/listsugestoes') {
-        if (!isOwner) {
-          await safeSendMessage(sock, from, { text: commandNotFoundMsg }, { quoted: msg });
+      if (command === '/dados') {
+        const bet = parseInt(args[0]);
+        if (isNaN(bet) || bet <= 0 || bet > getBalance(db, senderJid)) {
+          await safeSendMessage(sock, from, { text: "⚠️ Aposta inválida ou saldo insuficiente." }, { quoted: msg });
           continue;
         }
-
-        const suggs = db.suggestions || {};
-        const entries = Object.entries(suggs);
-
-        if (entries.length === 0) {
-          await safeSendMessage(sock, from, { text: "📋 Nenhuma sugestão pendente no momento." }, { quoted: msg });
-          continue;
-        }
-
-        let rep = `📋 *LISTA DE SUGESTÕES PENDENTES* 🌙\n\n`;
-        const mentions = [];
-
-        for (const [id, data] of entries) {
-          rep += `🆔 *ID:* \`${id}\`\n` +
-            `👤 *Usuário:* @${data.senderNumber}\n` +
-            `📝 *Sugestão:* ${data.text}\n` +
-            `──────────────────────────\n`;
-          mentions.push(data.sender);
-        }
-
-        await safeSendMessage(sock, from, { text: rep, mentions }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/upsugestao') {
-        if (!isOwner) {
-          await safeSendMessage(sock, from, { text: commandNotFoundMsg }, { quoted: msg });
-          continue;
-        }
-
-        const sugId = args[0];
-        if (!sugId || !db.suggestions?.[sugId]) {
-          await safeSendMessage(sock, from, { text: "⚠️ ID de sugestão inválido. Use `/listsugestoes` para verificar os IDs." }, { quoted: msg });
-          continue;
-        }
-
-        const sugData = db.suggestions[sugId];
-        delete db.suggestions[sugId];
-        saveDatabase(db);
-
-        const announcement = `🎉 *SUGESTÃO APROVADA E ADICIONADA!* 🌙✨\n\n` +
-          `📝 *Sugestão:* "${sugData.text}"\n` +
-          `👤 *Idealizada por:* @${sugData.senderNumber}\n\n` +
-          `Obrigado por contribuir para a evolução da Lunar System ©! 🚀`;
-
-        const activeGroups = Object.keys(db.rentedGroups).filter(jid => isGroupRented(db.rentedGroups, jid));
-        let count = 0;
-        for (const gJid of activeGroups) {
-          try {
-            await safeSendMessage(sock, gJid, { text: announcement, mentions: [sugData.sender] });
-            count++;
-          } catch {}
-        }
-
-        await safeSendMessage(sock, from, { text: `✅ Sugestão ID \`${sugId}\` aprovada e anunciada em ${count} grupos ativos!` }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/rmsugestao') {
-        if (!isOwner) {
-          await safeSendMessage(sock, from, { text: commandNotFoundMsg }, { quoted: msg });
-          continue;
-        }
-
-        const sugId = args[0];
-        if (!sugId || !db.suggestions?.[sugId]) {
-          await safeSendMessage(sock, from, { text: "⚠️ ID de sugestão inválido ou não encontrado." }, { quoted: msg });
-          continue;
-        }
-
-        delete db.suggestions[sugId];
-        saveDatabase(db);
-
-        await safeSendMessage(sock, from, { text: `🗑️ Sugestão ID \`${sugId}\` removida e excluída com sucesso!` }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/menudono') {
-        if (!isOwner) {
-          await safeSendMessage(sock, from, { text: commandNotFoundMsg }, { quoted: msg });
-          continue;
-        }
-
-        const donoMenu = `🤖 LUNAR BOT | LUNAR SYSTEM ©\n\n` +
-          `❖ 👑 PAINEL DO DONO\n` +
-          `› /menudono - Acessa o painel do dono\n` +
-          `› /addaluguel - Adiciona dias de aluguel\n` +
-          `› /rmaluguel - Remove o aluguel do grupo\n` +
-          `› /addtempoextra - Soma horas extras\n` +
-          `› /listalugueis - Lista todos os grupos alugados\n` +
-          `› /editprodutocoin - Edita valor de produto da lojinha\n` +
-          `› /listsolicitacoesgrupo - Lista solicitações de entrada\n` +
-          `› /listsugestoes - Lista sugestões enviadas\n` +
-          `› /upsugestao <id> - Aprova/anuncia sugestão\n` +
-          `› /rmsugestao <id> - Remove sugestão\n` +
-          `› /gerarpagamento - Gera cobrança PIX avulsa\n` +
-          `› /saldo - Consulta saldo da carteira Lunar\n` +
-          `› /sacar - Realiza saque total via PIX\n` +
-          `› /pagar - Envia PIX com margem\n` +
-          `› /blockbot - Bloqueia usuário no bot\n` +
-          `› /rmblockbot - Desbloqueia usuário\n` +
-          `› /addnewcomando - Cria comando personalizado\n` +
-          `› /ang - Dispara comunicado global\n\n` +
-          `✦ LUNAR SYSTEM © ✨`;
-
-        await safeSendMessage(sock, from, { text: donoMenu }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/listsolicitacoesgrupo') {
-        if (!isOwner) {
-          await safeSendMessage(sock, from, { text: commandNotFoundMsg }, { quoted: msg });
-          continue;
-        }
-
-        const reqs = db.groupRequests || {};
-        const entries = Object.entries(reqs);
-
-        if (entries.length === 0) {
-          await safeSendMessage(sock, from, { text: "📋 Nenhuma solicitação de entrada em grupo pendente no momento." }, { quoted: msg });
-          continue;
-        }
-
-        let rep = `📋 *SOLICITAÇÕES DE ENTRADA EM GRUPO* 🌙\n\n`;
-        for (const [id, data] of entries) {
-          rep += `🆔 *ID:* \`${id}\`\n` +
-            `👤 *Usuário:* @${data.sender.split('@')[0]}\n` +
-            `🔗 *Link:* ${data.link}\n` +
-            `──────────────────────────\n`;
-        }
-        await safeSendMessage(sock, from, { text: rep }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/aprovargrupo') {
-        if (!isOwner) {
-          await safeSendMessage(sock, from, { text: commandNotFoundMsg }, { quoted: msg });
-          continue;
-        }
-
-        const reqId = args[0];
-        if (!reqId || !db.groupRequests?.[reqId]) {
-          await safeSendMessage(sock, from, { text: "⚠️ ID de solicitação inválido ou não encontrado. Use `/listsolicitacoesgrupo` para ver os IDs." }, { quoted: msg });
-          continue;
-        }
-
-        const reqData = db.groupRequests[reqId];
-        try {
-          await safeSendMessage(sock, from, { text: `⏳ Entrando no grupo da solicitação \`${reqId}\`...` }, { quoted: msg });
-          await sock.groupAcceptInvite(reqData.inviteCode);
-          delete db.groupRequests[reqId];
-          saveDatabase(db);
-          await safeSendMessage(sock, from, { text: `✅ *BOT ADICIONADO COM SUCESSO AO GRUPO!*\nSolicitação \`${reqId}\` aprovada e removida da lista.` }, { quoted: msg });
-        } catch (e) {
-          await safeSendMessage(sock, from, { text: `❌ Erro ao entrar no grupo: ${e.message}` }, { quoted: msg });
-        }
-        continue;
-      }
-
-      if (command === '/aprovartodosgrupos') {
-        if (!isOwner) {
-          await safeSendMessage(sock, from, { text: commandNotFoundMsg }, { quoted: msg });
-          continue;
-        }
-
-        const reqs = db.groupRequests || {};
-        const entries = Object.entries(reqs);
-
-        if (entries.length === 0) {
-          await safeSendMessage(sock, from, { text: "📋 Nenhuma solicitação pendente para aprovar." }, { quoted: msg });
-          continue;
-        }
-
-        await safeSendMessage(sock, from, { text: `⏳ Processando a entrada em ${entries.length} grupo(s)...` }, { quoted: msg });
-        let successCount = 0;
-
-        for (const [id, data] of entries) {
-          try {
-            await sock.groupAcceptInvite(data.inviteCode);
-            delete db.groupRequests[id];
-            successCount++;
-          } catch {}
-        }
-
-        saveDatabase(db);
-        await safeSendMessage(sock, from, { text: `✅ *APROVAÇÃO EM MASSA CONCLUÍDA!*\nO bot entrou com sucesso em ${successCount} de ${entries.length} grupo(s).` }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/menuadm') {
-        const admMenu = `🤖 LUNAR BOT | LUNAR SYSTEM ©\n\n` +
-          `❖ 🛡️ ADMINISTRAÇÃO & GRUPOS\n` +
-          `› /menuadm - Exibe este painel admin\n` +
-          `› /gp a ou /gp f - Abre ou fecha o grupo\n` +
-          `› /gptime <hh:mm> <hh:mm> - Agendamento automático\n` +
-          `› /welcome [on/off] - Alterna boas-vindas\n` +
-          `› /saida [on/off] - Alterna aviso de saída\n` +
-          `› /jogos [on/off] - Ativa ou desliga os minigames\n` +
-          `› /ban @membro - Banir membro do grupo\n` +
-          `› /promover @membro - Promover a administrador\n` +
-          `› /rebaixar @membro - Rebaixar administrador\n` +
-          `› /mute @membro - Silenciar membro\n` +
-          `› /mutetemp @membro <1h/1d> - Silenciar temporário\n` +
-          `› /unmute @membro - Retirar silenciamento\n` +
-          `› /listmutados - Lista membros silenciados\n` +
-          `› /tagall - Marcação geral de todos\n` +
-          `› /limparchat - Limpa o chat do grupo\n\n` +
-          `❖ 🎮 GERENCIAMENTO DE JOGOS (ADM)\n` +
-          `› /resetcoinsjogos @mencao|all - Reseta saldo de moedas\n` +
-          `› /editartempojogo <horas> - Ajusta cooldown de jogos\n` +
-          `› /editarsalariominimojogo <valor> - Define salário mínimo\n\n` +
-          `✦ LUNAR SYSTEM © ✨`;
-
-        await safeSendMessage(sock, from, { text: admMenu }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/addaluguel' && isOwner) {
-        ownerInteractiveSessions.set(senderJid, { step: 'ADD_RENT_DAYS', targetGroup: from });
-        await safeSendMessage(sock, from, { text: "🌙 Quantos dias de aluguel você deseja adicionar/acumular neste grupo?" }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/rmaluguel' && isOwner) {
-        delete db.rentedGroups[from];
-        saveDatabase(db);
-        await safeSendMessage(sock, from, { text: "🚫 Aluguel deste grupo removido com sucesso!" }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/addtempoextra' && isOwner) {
-        ownerInteractiveSessions.set(senderJid, { step: 'ADD_TEMPO_EXTRA', targetGroup: from });
-        await safeSendMessage(sock, from, { text: "🌙 Quantas horas extras deseja somar ao aluguel deste grupo?" }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/listalugueis' && isOwner) {
-        const groups = Object.entries(db.rentedGroups);
-        if (groups.length === 0) {
-          await safeSendMessage(sock, from, { text: "📋 Nenhum grupo cadastrado no sistema no momento." }, { quoted: msg });
-          continue;
-        }
-
-        let report = `📋 *RELATÓRIO GERAL DE ALUGUÉIS — LUNAR SYSTEM ©* 🌙\n\n`;
-        for (const [gJid, info] of groups) {
-          const meta = await sock.groupMetadata(gJid).catch(() => ({ subject: 'Grupo Desconhecido', participants: [] }));
-          const inviteCode = await sock.groupInviteCode(gJid).catch(() => null);
-          const inviteLink = inviteCode ? `https://chat.whatsapp.com/${inviteCode}` : 'Link indisponível';
-          
-          const isActive = info.expireAt > Date.now();
-          const statusText = isActive ? '🟢 Ativo' : '🔴 Vencido';
-          const remainingTime = isActive 
-            ? `${Math.ceil((info.expireAt - Date.now()) / (1000 * 60 * 60 * 24))} dia(s) restante(s)` 
-            : 'Expirado';
-
-          report += `🏢 *Nome:* ${meta.subject}\n` +
-            `👥 *Membros:* ${meta.participants.length}\n` +
-            `📌 *Status:* ${statusText} (${remainingTime})\n` +
-            `🔗 *Link:* ${inviteLink}\n` +
-            `──────────────────────────\n`;
-        }
-        await safeSendMessage(sock, from, { text: report }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/gerarpagamento' && isOwner) {
-        ownerInteractiveSessions.set(senderJid, { step: 'GERAR_PAGAMENTO_VALOR' });
-        await safeSendMessage(sock, from, { text: "🌙 Digite o valor em Reais (ex: 15.00) para gerar o PIX:" }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/saldo' && isOwner) {
-        try {
-          const bal = await purincash.getWalletBalance();
-          await safeSendMessage(sock, from, { text: `💼 *SALDO CARTEIRA LUNAR*\n\n💰 Líquido: R$ ${bal.formatted}` }, { quoted: msg });
-        } catch (e) {
-          await safeSendMessage(sock, from, { text: `❌ Erro: ${e.message}` }, { quoted: msg });
-        }
-        continue;
-      }
-
-      if (command === '/sacar' && isOwner) {
-        ownerInteractiveSessions.set(senderJid, { step: 'SACAR_PIX_KEY' });
-        await safeSendMessage(sock, from, { text: "🌙 Envie a Chave PIX para onde deseja transferir todo o saldo:" }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/pagar' && isOwner) {
-        ownerInteractiveSessions.set(senderJid, { step: 'PAGAR_PIX_KEY' });
-        await safeSendMessage(sock, from, { text: "🌙 Envie a Chave PIX de destino:" }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/blockbot' && isOwner) {
-        const mentioned = msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
-        if (!mentioned) {
-          await safeSendMessage(sock, from, { text: "⚠️ Marque o usuário com `@mencao` para bloquear." }, { quoted: msg });
-          continue;
-        }
-        if (!db.blacklistedUsers.includes(mentioned)) db.blacklistedUsers.push(mentioned);
-        saveDatabase(db);
-        await safeSendMessage(sock, from, { text: `✅ Usuário adicionado à lista negra com sucesso!` }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/rmblockbot' && isOwner) {
-        const mentioned = msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
-        if (!mentioned) {
-          await safeSendMessage(sock, from, { text: "⚠️ Marque o usuário com `@mencao` para remover." }, { quoted: msg });
-          continue;
-        }
-        db.blacklistedUsers = db.blacklistedUsers.filter(j => j !== mentioned);
-        saveDatabase(db);
-        await safeSendMessage(sock, from, { text: `✅ Usuário removido da lista negra!` }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/addnewcomando' && isOwner) {
-        ownerInteractiveSessions.set(senderJid, { step: 'ADD_CMD_NAME' });
-        await safeSendMessage(sock, from, { text: "🌙 Digite o nome do comando (sem a barra `/`):" }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/ang' && isOwner) {
-        ownerInteractiveSessions.set(senderJid, { step: 'BROADCAST_TEXT' });
-        await safeSendMessage(sock, from, { text: "🌙 Envie o texto do comunicado global para todos os grupos:" }, { quoted: msg });
-        continue;
-      }
-
-      const isAdminCommand = ['/ban', '/kick', '/promover', '/rebaixar', '/gp', '/gptime', '/welcome', '/saida', '/mute', '/unmute', '/mutetemp', '/listmutados', '/jogos', '/modoparceria', '/addparceria', '/rmparceria', '/antilink1', '/antilink2', '/antilinkgeral', '/antispam', '/limparchat', '/tagall'].includes(command);
-      if (isAdminCommand && isGroup) {
-        const groupMetadata = await sock.groupMetadata(from).catch(() => null);
-        const participants = groupMetadata?.participants || [];
-        const senderParticipant = participants.find(p => p.id === senderJid);
-        const isSenderAdmin = senderParticipant?.admin === 'admin' || senderParticipant?.admin === 'superadmin';
-
-        if (!isSenderAdmin && !isOwner) {
-          await safeSendMessage(sock, from, { text: "⚠️ Apenas administradores do grupo podem usar este comando!" }, { quoted: msg });
-          continue;
-        }
-
-        const targetUser = msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0] || msg.message.extendedTextMessage?.contextInfo?.participant;
-
-        if (command === '/ban' || command === '/kick') {
-          if (!targetUser) {
-            await safeSendMessage(sock, from, { text: "⚠️ Marque ou responda o usuário que deseja banir." }, { quoted: msg });
-            continue;
-          }
-          await sock.groupParticipantsUpdate(from, [targetUser], 'remove');
-          await safeSendMessage(sock, from, { text: `🛡️ @${senderJid.split('@')[0]} baniu o usuário @${targetUser.split('@')[0]} do grupo.`, mentions: [senderJid, targetUser] });
-          continue;
-        }
-
-        if (command === '/promover') {
-          if (!targetUser) {
-            await safeSendMessage(sock, from, { text: "⚠️ Marque o usuário que deseja promover." }, { quoted: msg });
-            continue;
-          }
-          await sock.groupParticipantsUpdate(from, [targetUser], 'promote');
-          await safeSendMessage(sock, from, { text: `👑 @${senderJid.split('@')[0]} promoveu @${targetUser.split('@')[0]} a admin do grupo!`, mentions: [senderJid, targetUser] });
-          continue;
-        }
-
-        if (command === '/rebaixar') {
-          if (!targetUser) {
-            await safeSendMessage(sock, from, { text: "⚠️ Marque o admin que deseja rebaixar." }, { quoted: msg });
-            continue;
-          }
-          await sock.groupParticipantsUpdate(from, [targetUser], 'demote');
-          await safeSendMessage(sock, from, { text: `🛡️ @${senderJid.split('@')[0]} rebaixou @${targetUser.split('@')[0]} a membro.`, mentions: [senderJid, targetUser] });
-          continue;
-        }
-
-        if (command === '/gp') {
-          const action = args[0]?.toLowerCase();
-          if (action === 'a') {
-            await sock.groupSettingUpdate(from, 'not_announcement');
-            await safeSendMessage(sock, from, { text: `🔓 Grupo aberto para todos os membros por @${senderJid.split('@')[0]}!`, mentions: [senderJid] });
-          } else if (action === 'f') {
-            await sock.groupSettingUpdate(from, 'announcement');
-            await safeSendMessage(sock, from, { text: `🔒 Grupo fechado apenas para administradores por @${senderJid.split('@')[0]}!`, mentions: [senderJid] });
-          }
-          continue;
-        }
-
-        if (command === '/jogos') {
-          if (!db.groupSettings[from]) db.groupSettings[from] = {};
-          db.groupSettings[from].jogos = args[0]?.toLowerCase() === 'on';
-          saveDatabase(db);
-          await safeSendMessage(sock, from, { text: `🎮 Modo de Jogos e Apostas está agora: *${args[0]?.toUpperCase()}*` });
-          continue;
-        }
-
-        if (command === '/gptime') {
-          const openTime = args[0];
-          const closeTime = args[1];
-          if (!openTime || !closeTime) {
-            await safeSendMessage(sock, from, { text: "⚠️ Uso correto: `/gptime 07:00 22:00`" }, { quoted: msg });
-            continue;
-          }
-          if (!db.groupSchedules) db.groupSchedules = {};
-          db.groupSchedules[from] = { open: openTime, close: closeTime };
-          saveDatabase(db);
-          await safeSendMessage(sock, from, { text: `⏰ *Agendamento configurado com sucesso!*\n🔓 Abertura: ${openTime}\n🔒 Fechamento: ${closeTime}` });
-          continue;
-        }
-
-        if (command === '/welcome') {
-          if (!db.groupSettings[from]) db.groupSettings[from] = {};
-          db.groupSettings[from].welcome = args[0]?.toLowerCase() === 'on';
-          saveDatabase(db);
-          await safeSendMessage(sock, from, { text: `✨ Mensagem de Boas-Vindas está agora: *${args[0]?.toUpperCase()}*` });
-          continue;
-        }
-
-        if (command === '/saida') {
-          if (!db.groupSettings[from]) db.groupSettings[from] = {};
-          db.groupSettings[from].saida = args[0]?.toLowerCase() === 'on';
-          saveDatabase(db);
-          await safeSendMessage(sock, from, { text: `💧 Mensagem de Saída está agora: *${args[0]?.toUpperCase()}*` });
-          continue;
-        }
-
-        if (command === '/mute') {
-          if (!targetUser) {
-            await safeSendMessage(sock, from, { text: "⚠️ Marque o usuário que deseja mutar: `/mute @mencao`" }, { quoted: msg });
-            continue;
-          }
-          if (!db.mutedUsers[from]) db.mutedUsers[from] = {};
-          db.mutedUsers[from][targetUser] = { expiresAt: null };
-          saveDatabase(db);
-          await safeSendMessage(sock, from, { text: `🔇 Usuário @${targetUser.split('@')[0]} foi silenciado por tempo indeterminado!`, mentions: [targetUser] });
-          continue;
-        }
-
-        if (command === '/unmute') {
-          if (!targetUser) {
-            await safeSendMessage(sock, from, { text: "⚠️ Marque o usuário que deseja desmutar: `/unmute @mencao`" }, { quoted: msg });
-            continue;
-          }
-          if (db.mutedUsers[from]?.[targetUser]) {
-            delete db.mutedUsers[from][targetUser];
-            saveDatabase(db);
-            await safeSendMessage(sock, from, { text: `🔊 Usuário @${targetUser.split('@')[0]} foi desmutado com sucesso!`, mentions: [targetUser] });
-          } else {
-            await safeSendMessage(sock, from, { text: "⚠️ Este usuário não está silenciado." });
-          }
-          continue;
-        }
-
-        if (command === '/mutetemp') {
-          if (!targetUser) {
-            await safeSendMessage(sock, from, { text: "⚠️ Uso correto: `/mutetemp @mencao 2h` ou `/mutetemp @mencao 1d`" }, { quoted: msg });
-            continue;
-          }
-          const durationMs = parseMuteDuration(args[1]);
-          if (!durationMs) {
-            await safeSendMessage(sock, from, { text: "⚠️ Duração inválida! Use formato de horas (ex: `1h` a `24h`) ou dias (ex: `1d` a `366d`)." }, { quoted: msg });
-            continue;
-          }
-
-          if (!db.mutedUsers[from]) db.mutedUsers[from] = {};
-          db.mutedUsers[from][targetUser] = { expiresAt: Date.now() + durationMs };
-          saveDatabase(db);
-          await safeSendMessage(sock, from, { text: `🔇 Usuário @${targetUser.split('@')[0]} foi silenciado por *${args[1]}*!`, mentions: [targetUser] });
-          continue;
-        }
-
-        if (command === '/listmutados') {
-          const mutes = db.mutedUsers[from] || {};
-          const entries = Object.entries(mutes);
-          if (entries.length === 0) {
-            await safeSendMessage(sock, from, { text: "🔊 Não há usuários silenciados neste grupo no momento." }, { quoted: msg });
-            continue;
-          }
-
-          let muteListText = `🔇 *LISTA DE USUÁRIOS SILENCIADOS* 🌙\n\n`;
-          const mentions = [];
-          const now = Date.now();
-
-          for (const [uJid, data] of entries) {
-            let timeInfo = "Indeterminado";
-            if (data.expiresAt) {
-              const diffMs = data.expiresAt - now;
-              const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
-              timeInfo = diffHours > 24 ? `${Math.ceil(diffHours / 24)} dia(s)` : `${diffHours} hora(s)`;
-            }
-            muteListText += `👤 @${uJid.split('@')[0]}\n⏳ Tempo restante: *${timeInfo}*\n──────────────────────────\n`;
-            mentions.push(uJid);
-          }
-          await safeSendMessage(sock, from, { text: muteListText, mentions }, { quoted: msg });
-          continue;
-        }
-
-        if (command === '/modoparceria') {
-          if (!db.groupSettings[from]) db.groupSettings[from] = {};
-          db.groupSettings[from].modoparceria = args[0]?.toLowerCase() === 'on';
-          saveDatabase(db);
-          await safeSendMessage(sock, from, { text: `🤝 Modo Parceria está agora: *${args[0]?.toUpperCase()}*` });
-          continue;
-        }
-
-        if (command === '/addparceria') {
-          if (!targetUser) {
-            await safeSendMessage(sock, from, { text: "⚠️ Marque o usuário: `/addparceria @mencao <quantia>`" }, { quoted: msg });
-            continue;
-          }
-          const quantia = parseInt(args[1]);
-          if (isNaN(quantia) || quantia <= 0) {
-            await safeSendMessage(sock, from, { text: "⚠️ Informe uma quantia válida de links diários." }, { quoted: msg });
-            continue;
-          }
-          if (!db.partners[from]) db.partners[from] = {};
-          db.partners[from][targetUser] = {
-            limit: quantia,
-            used: 0,
-            resetDate: new Date().toISOString().split('T')[0],
-            joinedAt: Date.now()
-          };
-          saveDatabase(db);
-          await safeSendMessage(sock, from, { text: `✅ Parceiro @${targetUser.split('@')[0]} adicionado com cota de *${quantia} links diários*!`, mentions: [targetUser] });
-          continue;
-        }
-
-        if (command === '/rmparceria') {
-          if (!targetUser) {
-            await safeSendMessage(sock, from, { text: "⚠️ Marque o usuário que deseja remover dos parceiros." }, { quoted: msg });
-            continue;
-          }
-          if (db.partners[from] && db.partners[from][targetUser]) {
-            delete db.partners[from][targetUser];
-            saveDatabase(db);
-            await safeSendMessage(sock, from, { text: `🚫 Parceiro @${targetUser.split('@')[0]} removido com sucesso!`, mentions: [targetUser] });
-          } else {
-            await safeSendMessage(sock, from, { text: "⚠️ Este usuário não consta na lista de parceiros." });
-          }
-          continue;
-        }
-
-        if (command === '/antilink1') {
-          if (!db.groupSettings[from]) db.groupSettings[from] = {};
-          db.groupSettings[from].antilink1 = args[0]?.toLowerCase() === 'on';
-          saveDatabase(db);
-          await safeSendMessage(sock, from, { text: `⚙️ Antilink 1 está agora: *${args[0]?.toUpperCase()}*` });
-          continue;
-        }
-
-        if (command === '/antilink2') {
-          if (!db.groupSettings[from]) db.groupSettings[from] = {};
-          db.groupSettings[from].antilink2 = args[0]?.toLowerCase() === 'on';
-          saveDatabase(db);
-          await safeSendMessage(sock, from, { text: `⚙️ Antilink 2 (Com Ban) está agora: *${args[0]?.toUpperCase()}*` });
-          continue;
-        }
-
-        if (command === '/antilinkgeral') {
-          if (!db.groupSettings[from]) db.groupSettings[from] = {};
-          db.groupSettings[from].antilinkgeral = args[0]?.toLowerCase() === 'on';
-          saveDatabase(db);
-          await safeSendMessage(sock, from, { text: `⚙️ Antilink Geral está agora: *${args[0]?.toUpperCase()}*` });
-          continue;
-        }
-
-        if (command === '/antispam') {
-          if (!db.groupSettings[from]) db.groupSettings[from] = {};
-          db.groupSettings[from].antispam = args[0]?.toLowerCase() === 'on';
-          saveDatabase(db);
-          await safeSendMessage(sock, from, { text: `⚙️ Anti-Spam está agora: *${args[0]?.toUpperCase()}*` });
-          continue;
-        }
-
-        if (command === '/limparchat') {
-          const blankLines = "\n".repeat(30);
-          await safeSendMessage(sock, from, { text: blankLines + "🧹 *Chat limpo por administração!* " + blankLines });
-          continue;
-        }
-
-        if (command === '/tagall') {
-          const mentions = participants.map(p => p.id);
-          let tagText = `📢 *MARCAÇÃO GERAL DO GRUPO*\n\n`;
-          for (const p of participants) {
-            tagText += `@${p.id.split('@')[0]} `;
-          }
-          await safeSendMessage(sock, from, { text: tagText, mentions });
-          continue;
-        }
-      }
-
-      if (command === '/menuparceria') {
-        const parceriaText = `🤖 LUNAR BOT | LUNAR SYSTEM ©\n\n` +
-          `❖ 🤝 SISTEMA DE PARCERIAS\n` +
-          `› /menuparceria - Exibe este painel de parcerias\n` +
-          `› /modoparceria [on/off] - Ativa o modo de links\n` +
-          `› /addparceria @membro <qtd> - Adiciona cota diária\n` +
-          `› /rmparceria @membro - Remove o parceiro\n` +
-          `› /listparceria - Lista parceiros oficiais ativos\n\n` +
-          `✦ LUNAR SYSTEM © ✨`;
-
-        await safeSendMessage(sock, from, { text: parceriaText }, { quoted: msg });
-        continue;
-      }
-
-      if (command === '/listparceria') {
-        const groupPartners = db.partners[from] || {};
-        const entries = Object.entries(groupPartners);
-
-        if (entries.length === 0) {
-          await safeSendMessage(sock, from, { text: "🤝 Não há parceiros cadastrados neste grupo no momento." }, { quoted: msg });
-          continue;
-        }
-
-        let listText = `🤝 *LISTA DE PARCEIROS OFICIAIS* 🌙\n\n`;
-        const mentions = [];
-
-        for (const [userJid, data] of entries) {
-          const daysActive = Math.floor((Date.now() - (data.joinedAt || Date.now())) / (1000 * 60 * 60 * 24));
-          listText += `👤 @${userJid.split('@')[0]}\n` +
-            `📊 Quantidade de links diários: *${data.limit}*\n` +
-            `⏳ Parceiro há: *${daysActive} dia(s)*\n` +
-            `──────────────────────────\n`;
-          mentions.push(userJid);
-        }
-
-        await safeSendMessage(sock, from, { text: listText, mentions }, { quoted: msg });
-        continue;
-      }
-
-      const isGameCommand = ['/menujogos', '/carteira', '/dados', '/dardo', '/velha', '/slots', '/trabalhar', '/roubar', '/minerar', '/minerios', '/venderminerios'].includes(command);
-      if (isGameCommand && isGroup) {
-        const settings = db.groupSettings[from] || {};
-        if (!settings.jogos && !isOwner) {
-          await safeSendMessage(sock, from, { text: "🎮 O modo de jogos está desligado neste grupo! Peça a um administrador para ativar com `/jogos on`." }, { quoted: msg });
-          continue;
-        }
-
-        if (command === '/menujogos') {
-          const gamesMenu = `🤖 LUNAR BOT | LUNAR SYSTEM ©\n\n` +
-            `❖ 🎰 CASSINO & APOSTAS\n` +
-            `› /dados <valor> - Roda o dado de sorte (1 a 6x)\n` +
-            `› /dardo <valor> - Tiro ao alvo de precisão (2x)\n` +
-            `› /slots <valor> - Caça-níqueis com jackpots até 10x\n` +
-            `› /velha @rival <valor> - Duelo PvP no Jogo da Velha\n\n` +
-            `❖ 💼 AÇÕES & PVP\n` +
-            `› /trabalhar - Cumpra seu expediente e receba seu salário\n` +
-            `› /roubar @membro - Tenta assaltar a fortuna de outro membro\n` +
-            `› /minerar - Entre na mina e colete minérios valiosos\n\n` +
-            `❖ 💰 ECONOMIA & LOJINHA\n` +
-            `› /carteira - Consulta sua carteira de Lunar Cents (¢)\n` +
-            `› /minerios - Exibe seu inventário de pedras e minérios\n` +
-            `› /venderminerios <minerio|todos> - Venda seus minérios por coins\n` +
-            `› /menulojacoin - Acessa a Lojinha Oficial da Lunar\n\n` +
-            `✦ LUNAR SYSTEM © ✨`;
-
-          await safeSendMessage(sock, from, { text: gamesMenu }, { quoted: msg });
-          continue;
-        }
-
-        if (command === '/carteira') {
-          const balance = getBalance(db, senderJid);
-          const prof = db.userProfessions[senderJid]?.name || "Desempregado (Use /trabalhar)";
-          const pickaxeId = db.userPickaxes[senderJid] || null;
-          const pickaxeName = db.shopProducts[pickaxeId]?.name || "Enxada Simples";
-
-          await safeSendMessage(sock, from, { text: `💳 *CARTEIRA LUNAR*\n\n👤 *Jogador:* @${userNumber}\n💼 *Profissão:* ${prof}\n🔨 *Picareta Equipada:* ${pickaxeName}\n💰 *Saldo:* ${balance}¢`, mentions: [senderJid] }, { quoted: msg });
-          continue;
-        }
-
-        if (command === '/dados') {
-          const bet = parseInt(args[0]);
-          const currentBal = getBalance(db, senderJid);
-
-          if (isNaN(bet) || bet <= 0) {
-            await safeSendMessage(sock, from, { text: "⚠️ Digite um valor válido para apostar: `/dados 5`" }, { quoted: msg });
-            continue;
-          }
-          if (bet > currentBal) {
-            await safeSendMessage(sock, from, { text: `⚠️ Saldo insuficiente! Seu saldo atual é de *${currentBal}¢*.` }, { quoted: msg });
-            continue;
-          }
-
-          // DIFICULDADE DINÂMICA
-          const streak = db.diceWinStreak[senderJid] || 0;
-          let diffMultiplier = 1.0;
-
-          diffMultiplier += (streak * 0.05);
-
-          if (bet >= 10) {
-            let betDiff = 0;
-            if (bet >= 1000000) {
-              betDiff = 0.70;
-            } else {
-              betDiff = (bet / 1000000) * 0.70;
-            }
-            diffMultiplier += betDiff;
-          }
-
-          const baseLossChance = 0.1666;
-          const finalLossChance = Math.min(0.85, baseLossChance * diffMultiplier);
-
-          const isLoss = Math.random() < finalLossChance;
-          let roll = 1;
-
-          if (isLoss) {
-            roll = 1;
-          } else {
-            roll = Math.floor(Math.random() * 5) + 2;
-          }
-
-          if (roll === 1) {
-            updateBalance(db, senderJid, -bet);
-            db.diceWinStreak[senderJid] = 0;
-            saveDatabase(db);
-            await safeSendMessage(sock, from, { text: `🎲 *O Dado Rolou... e caiu em [ 1 ]!* 💥\n\n❌ Poxa, você tirou 1 e perdeu sua aposta de *${bet}¢*!` }, { quoted: msg });
-          } else {
-            const netWin = bet * (roll - 1);
-            updateBalance(db, senderJid, netWin);
-            db.diceWinStreak[senderJid] = streak + 1;
-            saveDatabase(db);
-
-            await safeSendMessage(sock, from, { text: `🎲 *O Dado Rolou... e caiu em [ ${roll} ]!* 🎉\n\n✨ Você multiplicou por *${roll}x*!\n💰 *Lucro Líquido:* +${netWin}¢` }, { quoted: msg });
-          }
-          continue;
-        }
-
-        if (command === '/dardo') {
-          const bet = parseInt(args[0]);
-          const currentBal = getBalance(db, senderJid);
-
-          if (isNaN(bet) || bet <= 0) {
-            await safeSendMessage(sock, from, { text: "⚠️ Digite um valor válido para apostar: `/dardo 5`" }, { quoted: msg });
-            continue;
-          }
-          if (bet > currentBal) {
-            await safeSendMessage(sock, from, { text: `⚠️ Saldo insuficiente! Seu saldo atual é de *${currentBal}¢*.` }, { quoted: msg });
-            continue;
-          }
-
-          const hit = Math.random() <= 0.40;
-
-          if (hit) {
-            const netWin = bet;
-            updateBalance(db, senderJid, netWin);
-
-            await safeSendMessage(sock, from, { text: `🎯 *BULLSEYE!* Você acertou em cheio no centro do alvo!\n\n✨ Multiplicador *2x* ativado!\n💰 *Lucro Líquido:* +${netWin}¢` }, { quoted: msg });
-          } else {
-            updateBalance(db, senderJid, -bet);
-            await safeSendMessage(sock, from, { text: `🎯 *O dardo voou longe...* e errou o alvo! 💥\n\n❌ Você perdeu sua aposta de *${bet}¢*!` }, { quoted: msg });
-          }
-          continue;
-        }
-
-        if (command === '/velha') {
-          const rivalJid = msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
-          const bet = parseInt(args[1]);
-
-          if (!rivalJid || isNaN(bet) || bet <= 0) {
-            await safeSendMessage(sock, from, { text: "⚠️ Uso correto: `/velha @rival <valor>`" }, { quoted: msg });
-            continue;
-          }
-
-          if (tictactoeGames.has(from)) {
-            await safeSendMessage(sock, from, { text: "⚠️ Já existe uma partida de Jogo da Velha acontecendo neste grupo! Aguarde terminar." }, { quoted: msg });
-            continue;
-          }
-
-          const challengerBal = getBalance(db, senderJid);
-          const rivalBal = getBalance(db, rivalJid);
-
-          if (challengerBal < bet) {
-            await safeSendMessage(sock, from, { text: `⚠️ Você não tem saldo suficiente para esta aposta! Seu saldo: *${challengerBal}¢*.` }, { quoted: msg });
-            continue;
-          }
-          if (rivalBal < bet) {
-            await safeSendMessage(sock, from, { text: `⚠️ O desafiado @${rivalJid.split('@')[0]} não possui saldo suficiente (*${rivalBal}¢*) para apostar *${bet}¢*!`, mentions: [rivalJid] }, { quoted: msg });
-            continue;
-          }
-
+        const streak = db.diceWinStreak[senderJid] || 0;
+        let diff = 1.0 + (streak * 0.05) + (bet >= 10 ? Math.min(0.70, (bet / 1000000) * 0.70) : 0);
+        const roll = Math.random() < Math.min(0.85, 0.1666 * diff) ? 1 : Math.floor(Math.random() * 5) + 2;
+
+        if (roll === 1) {
           updateBalance(db, senderJid, -bet);
-          updateBalance(db, rivalJid, -bet);
-
-          tictactoeGames.set(from, {
-            player1: senderJid,
-            player2: rivalJid,
-            turn: senderJid,
-            bet: bet,
-            board: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
-          });
-
-          const boardDisplay = `🎮 *DUELO DE JOGO DA VELHA INICIADO!*\n\n` +
-            `👤 *Desafiante:* @${senderJid.split('@')[0]} (❌)\n` +
-            `👤 *Rival:* @${rivalJid.split('@')[0]} (⭕)\n` +
-            `💰 *Aposta de Cada:* ${bet}¢ (Pote Total: ${bet * 2}¢)\n\n` +
-            `1️⃣   | 2️⃣   | 3️⃣  \n` +
-            `4️⃣   | 5️⃣   | 6️⃣  \n` +
-            `7️⃣   | 8️⃣   | 9️⃣  \n\n` +
-            `👉 Vez do jogador: @${senderJid.split('@')[0]} (Responda apenas com o número da casa de 1 a 9)`;
-
-          await safeSendMessage(sock, from, { text: boardDisplay, mentions: [senderJid, rivalJid] });
-          continue;
+          db.diceWinStreak[senderJid] = 0;
+          saveDatabase(db);
+          await safeSendMessage(sock, from, { text: `🎲 Caiu em [ 1 ]! Perdeu ${bet}¢.` }, { quoted: msg });
+        } else {
+          const win = bet * (roll - 1);
+          updateBalance(db, senderJid, win);
+          db.diceWinStreak[senderJid] = streak + 1;
+          saveDatabase(db);
+          await safeSendMessage(sock, from, { text: `🎲 Caiu em [ ${roll} ]! Ganhou +${win}¢ (${roll}x).` }, { quoted: msg });
         }
-
-        if (command === '/slots') {
-          const bet = parseInt(args[0]);
-          const currentBal = getBalance(db, senderJid);
-
-          if (isNaN(bet) || bet <= 0) {
-            await safeSendMessage(sock, from, { text: "⚠️ Digite um valor válido para apostar: `/slots 10`" }, { quoted: msg });
-            continue;
-          }
-          if (bet > currentBal) {
-            await safeSendMessage(sock, from, { text: `⚠️ Saldo insuficiente! Seu saldo atual é de *${currentBal}¢*.` }, { quoted: msg });
-            continue;
-          }
-
-          const symbols = ['🥐', '🪐', '🚀', '💎', '🌙'];
-          const rand = Math.random();
-          let s1, s2, s3, multiplier = 0;
-
-          if (rand < 0.03) {
-            s1 = '🌙'; s2 = '🌙'; s3 = '🌙';
-            multiplier = 10;
-          } else if (rand < 0.10) {
-            s1 = '💎'; s2 = '💎'; s3 = '💎';
-            multiplier = 5;
-          } else if (rand < 0.22) {
-            s1 = '🚀'; s2 = '🚀'; s3 = '🚀';
-            multiplier = 3;
-          } else if (rand < 0.40) {
-            s1 = '🪐'; s2 = '🪐'; s3 = '🪐';
-            multiplier = 2;
-          } else {
-            s1 = symbols[Math.floor(Math.random() * symbols.length)];
-            s2 = symbols[Math.floor(Math.random() * symbols.length)];
-            s3 = symbols[Math.floor(Math.random() * symbols.length)];
-            if (s1 === s2 && s2 === s3) s3 = symbols[(symbols.indexOf(s3) + 1) % symbols.length];
-            multiplier = 0;
-          }
-
-          const slotDisplay = `🎰 *CAÇA-NÍQUEIS LUNAR NEON* 🎰\n\n` +
-            `[ ${s1} | ${s2} | ${s3} ]\n\n`;
-
-          if (multiplier > 0) {
-            const netWin = bet * (multiplier - 1);
-            updateBalance(db, senderJid, netWin);
-
-            const jackpotHeader = multiplier === 10 ? "🚨 *MEGA JACKPOT 10X DETONADO!* 🚨" : "🎉 *GRANDE VITÓRIA!*";
-            await safeSendMessage(sock, from, { text: `${slotDisplay}${jackpotHeader}\n\n✨ Multiplicador: *${multiplier}x*\n💰 *Lucro Líquido:* +${netWin}¢` }, { quoted: msg });
-          } else {
-            updateBalance(db, senderJid, -bet);
-            await safeSendMessage(sock, from, { text: `${slotDisplay}💥 Poxa, os símbolos não alinharam!\n❌ Você perdeu sua aposta de *${bet}¢*!` }, { quoted: msg });
-          }
-          continue;
-        }
-      }
-
-      if (command === '/menualuguel' || command === '/infoaluguel') {
-        const groupExpire = db.rentedGroups[from]?.expireAt;
-        const timeRemaining = groupExpire && groupExpire > Date.now() 
-          ? `⏳ *Status:* Ativo (Expira em ${Math.ceil((groupExpire - Date.now()) / (1000 * 60 * 60 * 24))} dias)` 
-          : `❌ *Status:* Expirado ou Sem Aluguel Ativo`;
-
-        const infoText = `🤖 LUNAR BOT | LUNAR SYSTEM ©\n\n` +
-          `❖ 💳 PLANOS DE ALUGUEL\n` +
-          `› /menualuguel - Verifica o status do grupo\n` +
-          `› /aluguel - Exibe a tabela de preços e planos\n` +
-          `› /alugar <plano> - Gera PIX de ativação automática\n\n` +
-          `📌 ${timeRemaining}\n\n` +
-          `✦ LUNAR SYSTEM © ✨`;
-
-        await safeSendMessage(sock, from, { text: infoText }, { quoted: msg });
         continue;
       }
 
-      if (command === '/aluguel') {
-        let tableText = `🌙 *TABELA OFICIAL DE ALUGUEL — LUNAR SYSTEM ©* 🌙\n\n` +
-          `Garanta automação profissional e segurança para seu grupo!\n\n`;
-
-        for (const [key, plan] of Object.entries(db.rentalPlans)) {
-          tableText += `💎 *Plano:* ${plan.name}\n` +
-            `⏱️ *Duração:* ${plan.days} dia(s)\n` +
-            `💵 *Valor:* R$ ${plan.price.toFixed(2).replace('.', ',')}\n` +
-            `👉 *Comando:* \`/alugar ${key}\`\n\n`;
+      if (command === '/dardo') {
+        const bet = parseInt(args[0]);
+        if (isNaN(bet) || bet <= 0 || bet > getBalance(db, senderJid)) {
+          await safeSendMessage(sock, from, { text: "⚠️ Aposta inválida." }, { quoted: msg });
+          continue;
         }
-
-        await safeSendMessage(sock, from, { text: tableText }, { quoted: msg });
+        if (Math.random() <= 0.40) {
+          updateBalance(db, senderJid, bet);
+          await safeSendMessage(sock, from, { text: `🎯 Bullseye! Ganhou +${bet}¢ (2x).` });
+        } else {
+          updateBalance(db, senderJid, -bet);
+          await safeSendMessage(sock, from, { text: `🎯 Errou! Perdeu ${bet}¢.` });
+        }
         continue;
       }
 
-      if (command === '/alugar') {
-        const planKey = args[0]?.toLowerCase();
-        const plan = db.rentalPlans[planKey];
-
-        if (!plan) {
-          await safeSendMessage(sock, from, { text: "⚠️ Plano inválido! Digite `/aluguel` para ver os planos disponíveis." }, { quoted: msg });
+      if (command === '/slots') {
+        const bet = parseInt(args[0]);
+        if (isNaN(bet) || bet <= 0 || bet > getBalance(db, senderJid)) {
+          await safeSendMessage(sock, from, { text: "⚠️ Aposta inválida." }, { quoted: msg });
           continue;
         }
+        const symbols = ['🥐', '🪐', '🚀', '💎', '🌙'];
+        const r = Math.random();
+        let mult = r < 0.03 ? 10 : r < 0.10 ? 5 : r < 0.22 ? 3 : r < 0.40 ? 2 : 0;
+        let s1 = symbols[Math.floor(Math.random() * symbols.length)];
+        let s2 = symbols[Math.floor(Math.random() * symbols.length)];
+        let s3 = mult > 0 ? s1 : symbols[Math.floor(Math.random() * symbols.length)];
 
-        try {
-          await safeSendMessage(sock, from, { text: `⏳ Gerando PIX automático de R$ ${plan.price.toFixed(2)} para o plano *${plan.name}*...` }, { quoted: msg });
-
-          const charge = await purincash.createPixCharge(plan.price, `Aluguel Lunar - ${plan.name}`);
-          const chargeId = charge.id || charge.chargeId;
-          const pixCode = extractPixString(charge);
-
-          if (!pixCode) {
-            await safeSendMessage(sock, from, { text: `❌ Não foi possível extrair o código PIX da resposta da API.` }, { quoted: msg });
-            continue;
-          }
-
-          const qrBuffer = await generateQrBuffer(pixCode);
-          if (qrBuffer) {
-            await safeSendMessage(sock, from, { 
-              image: qrBuffer, 
-              caption: `✅ *PIX GERADO COM SUCESSO!*\n\n💎 *Plano:* ${plan.name}\n💵 *Valor:* R$ ${plan.price.toFixed(2)}\n\n📌 *Escaneie o QR Code acima com o aplicativo do seu banco ou utilize o Copia e Cola enviado a seguir:*` 
-            }, { quoted: msg });
-          }
-
-          await safeSendMessage(sock, from, { text: pixCode }, { quoted: msg });
-
-          purincash.monitorPayment(
-            chargeId,
-            async () => {
-              const currentExpire = db.rentedGroups[from]?.expireAt || Date.now();
-              const baseTime = currentExpire > Date.now() ? currentExpire : Date.now();
-              const newExpire = baseTime + (plan.days * 24 * 60 * 60 * 1000);
-
-              db.rentedGroups[from] = { expireAt: newExpire };
-              saveDatabase(db);
-
-              await safeSendMessage(sock, from, { 
-                text: `🎉 *PAGAMENTO CONFIRMADO COM SUCESSO!*\n\n✨ O aluguel do grupo foi estendido em *+${plan.days} dia(s)*!\nObrigado por assinar a Lunar System ©.` 
-              });
-            },
-            async () => {
-              await safeSendMessage(sock, from, { text: `⏱️ O tempo para pagamento da cobrança \`${chargeId}\` expirou.` });
-            }
-          );
-
-        } catch (e) {
-          await safeSendMessage(sock, from, { text: `❌ Erro ao gerar pagamento: ${e.message}` }, { quoted: msg });
+        if (mult > 0) {
+          const win = bet * (mult - 1);
+          updateBalance(db, senderJid, win);
+          await safeSendMessage(sock, from, { text: `🎰 [ ${s1} | ${s2} | ${s3} ]\n🎉 *JACKPOT ${mult}X!* +${win}¢` });
+        } else {
+          updateBalance(db, senderJid, -bet);
+          await safeSendMessage(sock, from, { text: `🎰 [ ${s1} | ${s2} | ${s3} ]\n💥 Perdeu ${bet}¢.` });
         }
         continue;
       }
 
       if (command === '/menu') {
-        const menuText = `🤖 LUNAR BOT | LUNAR SYSTEM ©\n\n` +
-          `❖ 📋 MENUS PRINCIPAIS\n` +
-          `› /menualuguel - Painel e status de aluguel\n` +
-          `› /aluguel - Tabela de preços e planos\n` +
-          `› /menuparceria - Sistema de parcerias oficiais\n` +
-          `› /menujogos - Cassino, jogos, ações e mineração\n` +
-          `› /menulojacoin - Lojinha de picaretas e itens\n` +
-          `› /menuadm - Painel de administração do grupo\n` +
-          `› /sugestao <txt> - Envia sugestão para o dono\n` +
-          `› /owner ou /dono - Contato do criador\n` +
-          `› /ping - Verifica latência do bot\n\n` +
-          `✦ LUNAR SYSTEM © ✨`;
-
-        await safeSendMessage(sock, from, { text: menuText }, { quoted: msg });
+        await safeSendMessage(sock, from, { text: `🤖 LUNAR BOT\n› /menujogos\n› /menulojacoin\n› /menuadm\n› /ping` }, { quoted: msg });
         continue;
       }
 
       if (command === '/ping') {
         const start = Date.now();
-        await safeSendMessage(sock, from, { text: `🏓 Pong! Latência: ${Date.now() - start}ms | Lunar System 100% Operacional.` }, { quoted: msg });
+        await safeSendMessage(sock, from, { text: `🏓 Pong! ${Date.now() - start}ms` }, { quoted: msg });
         continue;
       }
 
       if (command === '/owner' || command === '/dono') {
-        const ownerNum = FIXED_OWNER_NUMBER;
-        const ownerName = db.ownerName || "MONTANHA DEV";
-
-        const vcard = 'BEGIN:VCARD\n' +
-          'VERSION:3.0\n' +
-          `FN:${ownerName}\n` +
-          `ORG:${config.COMPANY_NAME};\n` +
-          `TEL;type=CELL;type=VOICE;waid=${ownerNum}:+${ownerNum}\n` +
-          'END:VCARD';
-
-        await safeSendMessage(sock, from, { contacts: { displayName: ownerName, contacts: [{ vcard }] } }, { quoted: msg });
+        const vcard = 'BEGIN:VCARD\nVERSION:3.0\nFN:MONTANHA DEV\nTEL;type=CELL;waid=5562982520428:+5562982520428\nEND:VCARD';
+        await safeSendMessage(sock, from, { contacts: { displayName: "MONTANHA DEV", contacts: [{ vcard }] } }, { quoted: msg });
         continue;
       }
 
@@ -2218,7 +615,6 @@ async function startBot() {
         await safeSendMessage(sock, from, { text: db.customCommands[command.replace('/', '')] }, { quoted: msg });
         continue;
       }
-
     }
   });
 }

@@ -1,3 +1,5 @@
+session/
+database.json
 node_modules/
-npm-debug.log
+*.log
 .DS_Store
