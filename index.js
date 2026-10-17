@@ -12,6 +12,7 @@ const FIXED_OWNER_NUMBER = '5562982520428';
 const ownerInteractiveSessions = new Map();
 const spamTracker = new Map();
 const tictactoeGames = new Map();
+const tictactoeInvites = new Map();
 
 // TABELA DE MINÉRIOS
 const ORES = {
@@ -670,12 +671,58 @@ async function startBot() {
         }
       }
 
-      // JOGO DA VELHA
+      // TRATAMENTO DE CONVITE / PARTIDA PENDING DO JOGO DA VELHA
+      if (isGroup && tictactoeInvites.has(from) && (trimmedText === '/aceito' || trimmedText === '/cancelar')) {
+        const invite = tictactoeInvites.get(from);
+        if (senderJid === invite.player2) {
+          if (trimmedText === '/cancelar') {
+            updateBalance(db, invite.player1, invite.bet);
+            tictactoeInvites.delete(from);
+            await safeSendMessage(sock, from, { text: `❌ O desafio de Jogo da Velha foi recusado/cancelado por @${userNumber}. A aposta foi devolvida ao desafiante.`, mentions: [senderJid] });
+            continue;
+          }
+
+          if (trimmedText === '/aceito') {
+            const rivalBal = getBalance(db, senderJid);
+            if (rivalBal < invite.bet) {
+              updateBalance(db, invite.player1, invite.bet);
+              tictactoeInvites.delete(from);
+              await safeSendMessage(sock, from, { text: `⚠️ Você não tem saldo suficiente (*${rivalBal}¢*) para aceitar a aposta de *${invite.bet}¢*! O desafio foi cancelado e o valor devolvido.`, mentions: [senderJid] });
+              continue;
+            }
+
+            updateBalance(db, senderJid, -invite.bet);
+            tictactoeInvites.delete(from);
+
+            tictactoeGames.set(from, {
+              player1: invite.player1,
+              player2: invite.player2,
+              turn: invite.player1,
+              bet: invite.bet,
+              board: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+            });
+
+            const boardDisplay = `🎮 *DUELO DE JOGO DA VELHA INICIADO!*\n\n` +
+              `👤 *Desafiante:* @${invite.player1.split('@')[0]} (❌)\n` +
+              `👤 *Rival:* @${invite.player2.split('@')[0]} (⭕)\n` +
+              `💰 *Aposta de Cada:* ${invite.bet}¢ (Pote Total: ${invite.bet * 2}¢)\n\n` +
+              `1 | 2 | 3\n` +
+              `4 | 5 | 6\n` +
+              `7 | 8 | 9\n\n` +
+              `👉 Vez do jogador: @${invite.player1.split('@')[0]} (Responda apenas com o número da casa de 1 a 9)`;
+
+            await safeSendMessage(sock, from, { text: boardDisplay, mentions: [invite.player1, invite.player2] });
+            continue;
+          }
+        }
+      }
+
+      // JOGO DA VELHA EM ANDAMENTO (JOGADAS DE 1 A 9)
       if (isGroup && tictactoeGames.has(from) && /^[1-9]$/.test(trimmedText)) {
         const game = tictactoeGames.get(from);
         if (game.turn === senderJid) {
           const pos = parseInt(trimmedText) - 1;
-          if (game.board[pos] === ' ') {
+          if (game.board[pos] !== '❌' && game.board[pos] !== '⭕') {
             game.board[pos] = game.turn === game.player1 ? '❌' : '⭕';
             
             const winPatterns = [
@@ -683,7 +730,7 @@ async function startBot() {
               [0,3,6], [1,4,7], [2,5,8],
               [0,4,8], [2,4,6]
             ];
-            const isWin = winPatterns.some(p => game.board[p[0]] !== ' ' && game.board[p[0]] === game.board[p[1]] && game.board[p[1]] === game.board[p[2]]);
+            const isWin = winPatterns.some(p => game.board[p[0]] === game.board[p[1]] && game.board[p[1]] === game.board[p[2]]);
 
             if (isWin) {
               const prize = game.bet * 2;
@@ -697,7 +744,7 @@ async function startBot() {
               continue;
             }
 
-            if (!game.board.includes(' ')) {
+            if (!game.board.some(cell => cell !== '❌' && cell !== '⭕')) {
               updateBalance(db, game.player1, game.bet);
               updateBalance(db, game.player2, game.bet);
               tictactoeGames.delete(from);
@@ -709,9 +756,9 @@ async function startBot() {
             tictactoeGames.set(from, game);
 
             const boardDisplay = `🎮 *JOGO DA VELHA VALENDO ${game.bet}¢*\n\n` +
-              `1️⃣ ${game.board[0]} | 2️⃣ ${game.board[1]} ┃ 3️⃣ ${game.board[2]}\n` +
-              `4️⃣ ${game.board[3]} | 5️⃣ ${game.board[4]} ┃ 6️⃣ ${game.board[5]}\n` +
-              `7️⃣ ${game.board[6]} | 8️⃣ ${game.board[7]} ┃ 9️⃣ ${game.board[8]}\n\n` +
+              `${game.board[0]} | ${game.board[1]} \vert{}${game.board[2]}\n` +
+              `${game.board[3]} | ${game.board[4]} \vert{}${game.board[5]}\n` +
+              `${game.board[6]} | ${game.board[7]} \vert{}${game.board[8]}\n\n` +
               `👉 Vez do jogador: @${game.turn.split('@')[0]} (Responda com o número de 1 a 9)`;
             await safeSendMessage(sock, from, { text: boardDisplay, mentions: [game.turn] });
             continue;
@@ -956,7 +1003,6 @@ async function startBot() {
           continue;
         }
 
-        // Venda individual
         const oreKey = Object.keys(ORES).find(k => k === targetOre || ORES[k].name.toLowerCase() === targetOre);
         if (!oreKey || !userOres[oreKey] || userOres[oreKey] <= 0) {
           await safeSendMessage(sock, from, { text: `⚠️ Você não possui minérios do tipo \`${targetOre}\` para vender.` }, { quoted: msg });
@@ -1193,7 +1239,6 @@ async function startBot() {
         }
       }
 
-      // COMANDOS DO DONO PARA GERENCIAR LOJINHA DE COIN
       if (command === '/editprodutocoin' && isOwner) {
         ownerInteractiveSessions.set(senderJid, { step: 'EDIT_PROD_SELECT' });
         await safeSendMessage(sock, from, { text: "✏️ Digite o ID do produto que deseja editar o valor:" }, { quoted: msg });
@@ -1915,7 +1960,6 @@ async function startBot() {
             continue;
           }
 
-          // DIFICULDADE DINÂMICA
           const streak = db.diceWinStreak[senderJid] || 0;
           let diffMultiplier = 1.0;
 
@@ -1995,44 +2039,37 @@ async function startBot() {
             continue;
           }
 
-          if (tictactoeGames.has(from)) {
-            await safeSendMessage(sock, from, { text: "⚠️ Já existe uma partida de Jogo da Velha acontecendo neste grupo! Aguarde terminar." }, { quoted: msg });
+          if (rivalJid === senderJid) {
+            await safeSendMessage(sock, from, { text: "⚠️ Você não pode desafiar a si mesmo!" }, { quoted: msg });
+            continue;
+          }
+
+          if (tictactoeGames.has(from) || tictactoeInvites.has(from)) {
+            await safeSendMessage(sock, from, { text: "⚠️ Já existe uma partida ou convite de Jogo da Velha pendente neste grupo!" }, { quoted: msg });
             continue;
           }
 
           const challengerBal = getBalance(db, senderJid);
-          const rivalBal = getBalance(db, rivalJid);
-
           if (challengerBal < bet) {
             await safeSendMessage(sock, from, { text: `⚠️ Você não tem saldo suficiente para esta aposta! Seu saldo: *${challengerBal}¢*.` }, { quoted: msg });
             continue;
           }
-          if (rivalBal < bet) {
-            await safeSendMessage(sock, from, { text: `⚠️ O desafiado @${rivalJid.split('@')[0]} não possui saldo suficiente (*${rivalBal}¢*) para apostar *${bet}¢*!`, mentions: [rivalJid] }, { quoted: msg });
-            continue;
-          }
 
           updateBalance(db, senderJid, -bet);
-          updateBalance(db, rivalJid, -bet);
 
-          tictactoeGames.set(from, {
+          tictactoeInvites.set(from, {
             player1: senderJid,
             player2: rivalJid,
-            turn: senderJid,
-            bet: bet,
-            board: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
+            bet: bet
           });
 
-          const boardDisplay = `🎮 *DUELO DE JOGO DA VELHA INICIADO!*\n\n` +
+          const inviteText = `🎮 *CONVITE PARA JOGO DA VELHA*\n\n` +
             `👤 *Desafiante:* @${senderJid.split('@')[0]} (❌)\n` +
             `👤 *Rival:* @${rivalJid.split('@')[0]} (⭕)\n` +
-            `💰 *Aposta de Cada:* ${bet}¢ (Pote Total: ${bet * 2}¢)\n\n` +
-            `1️⃣   | 2️⃣   | 3️⃣  \n` +
-            `4️⃣   | 5️⃣   | 6️⃣  \n` +
-            `7️⃣   | 8️⃣   | 9️⃣  \n\n` +
-            `👉 Vez do jogador: @${senderJid.split('@')[0]} (Responda apenas com o número da casa de 1 a 9)`;
+            `💰 *Aposta:* ${bet}¢ (Pote Total: ${bet * 2}¢)\n\n` +
+            `👉 @${rivalJid.split('@')[0]}, digite \`/aceito\` para aceitar o duelo ou \`/cancelar\` para recusar!`;
 
-          await safeSendMessage(sock, from, { text: boardDisplay, mentions: [senderJid, rivalJid] });
+          await safeSendMessage(sock, from, { text: inviteText, mentions: [senderJid, rivalJid] });
           continue;
         }
 
