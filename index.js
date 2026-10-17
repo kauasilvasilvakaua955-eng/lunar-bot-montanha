@@ -14,17 +14,6 @@ const spamTracker = new Map();
 const tictactoeGames = new Map();
 const tictactoeInvites = new Map();
 
-// EMOJIS NUMÉRICOS BLINDADOS CONTRA O ERRO ERT
-const N_1 = '\u0031\uFE0F\u20E3';
-const N_2 = '\u0032\uFE0F\u20E3';
-const N_3 = '\u0033\uFE0F\u20E3';
-const N_4 = '\u0034\uFE0F\u20E3';
-const N_5 = '\u0035\uFE0F\u20E3';
-const N_6 = '\u0036\uFE0F\u20E3';
-const N_7 = '\u0037\uFE0F\u20E3';
-const N_8 = '\u0038\uFE0F\u20E3';
-const N_9 = '\u0039\uFE0F\u20E3';
-
 // TABELA DE MINÉRIOS
 const ORES = {
   carvao: { id: "carvao", name: "Carvão", rarity: 0.40, basePrice: 2, icon: "⬛" },
@@ -710,16 +699,16 @@ async function startBot() {
               player2: invite.player2,
               turn: invite.player1,
               bet: invite.bet,
-              board: [N_1, N_2, N_3, N_4, N_5, N_6, N_7, N_8, N_9]
+              board: ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
             });
 
             const boardDisplay = `🎮 *DUELO DE JOGO DA VELHA INICIADO!*\n\n` +
               `👤 *Desafiante:* @${invite.player1.split('@')[0]} (❌)\n` +
               `👤 *Rival:* @${invite.player2.split('@')[0]} (⭕)\n` +
               `💰 *Aposta de Cada:* ${invite.bet}¢ (Pote Total: ${invite.bet * 2}¢)\n\n` +
-              `${N_1} | ${N_2} \vert{}${N_3}\n` +
-              `${N_4} | ${N_5} \vert{}${N_6}\n` +
-              `${N_7} | ${N_8} \vert{}${N_9}\n\n` +
+              `1️⃣ | 2️⃣ | 3️⃣\n` +
+              `4️⃣ | 5️⃣ | 6️⃣\n` +
+              `7️⃣ | 8️⃣ | 9️⃣\n\n` +
               `👉 Vez do jogador: @${invite.player1.split('@')[0]} (Responda apenas com o número da casa de 1 a 9)`;
 
             await safeSendMessage(sock, from, { text: boardDisplay, mentions: [invite.player1, invite.player2] });
