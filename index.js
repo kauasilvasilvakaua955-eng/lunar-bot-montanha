@@ -28,6 +28,8 @@ function loadDatabase() {
       mutedUsers: {},
       wallets: {},
       groupRequests: {},
+      suggestions: {},
+      suggestionCounter: 1,
       requestCounter: 1,
       rentalPlans: {
         "1_dia": { name: "1 Dia de Aluguel", days: 1, price: 2.00 },
@@ -50,6 +52,8 @@ function loadDatabase() {
     if (!data.mutedUsers) data.mutedUsers = {};
     if (!data.wallets) data.wallets = {};
     if (!data.groupRequests) data.groupRequests = {};
+    if (!data.suggestions) data.suggestions = {};
+    if (data.suggestionCounter === undefined) data.suggestionCounter = 1;
     if (data.requestCounter === undefined) data.requestCounter = 1;
     if (!data.rentalPlans) data.rentalPlans = {
       "1_dia": { name: "1 Dia de Aluguel", days: 1, price: 2.00 },
@@ -58,7 +62,7 @@ function loadDatabase() {
     };
     return data;
   } catch {
-    return { ownerJid: null, ownerName: "MONTANHA DEV", ownerNumber: FIXED_OWNER_NUMBER, rentedGroups: {}, blacklistedUsers: [], customCommands: {}, groupSettings: {}, partners: {}, groupSchedules: {}, mutedUsers: {}, wallets: {}, groupRequests: {}, requestCounter: 1, rentalPlans: {} };
+    return { ownerJid: null, ownerName: "MONTANHA DEV", ownerNumber: FIXED_OWNER_NUMBER, rentedGroups: {}, blacklistedUsers: [], customCommands: {}, groupSettings: {}, partners: {}, groupSchedules: {}, mutedUsers: {}, wallets: {}, groupRequests: {}, suggestions: {}, suggestionCounter: 1, requestCounter: 1, rentalPlans: {} };
   }
 }
 
@@ -96,7 +100,7 @@ async function safeSendMessage(sock, jid, content, options = {}) {
   try {
     return await sock.sendMessage(jid, content, options);
   } catch (err) {
-    console.log(`⚠️ Não foi possível enviar mensagem em ${jid}: ${err.message}`);
+    console.log(`⚠️ Não foi possível enviar mensagem em ${jid}:${err.message}`);
     return null;
   }
 }
@@ -135,6 +139,29 @@ function extractInviteCode(text) {
 }
 
 function initBackgroundTasks(sock) {
+  // LIMPEZA AUTOMÁTICA DE CACHE E LOGS A CADA 30 MINUTOS
+  setInterval(() => {
+    try {
+      if (global.gc) {
+        global.gc();
+        console.log('🧹 [AUTO-LIMPEZA] Coleta de lixo (GC) executada com sucesso.');
+      }
+      const sessionPath = path.join(__dirname, 'session');
+      if (fs.existsSync(sessionPath)) {
+        const files = fs.readdirSync(sessionPath);
+        let cleaned = 0;
+        for (const file of files) {
+          if (file.includes('pre-key') && parseInt(file.split('-')[1]) < Date.now() - 86400000) {
+            // Mantém chaves recentes, limpa obsoletas se necessário
+          }
+        }
+      }
+    } catch (e) {
+      console.log('⚠️ Erro na limpeza automática de cache:', e.message);
+    }
+  }, 30 * 60 * 1000);
+
+  // AGENDAMENTOS E MUTES
   setInterval(async () => {
     const db = loadDatabase();
     const now = new Date();
@@ -527,9 +554,9 @@ async function startBot() {
             tictactoeGames.set(from, game);
 
             const boardDisplay = `🎮 *JOGO DA VELHA VALENDO ${game.bet}¢*\n\n` +
-              `1️⃣ ${game.board[0]} | 2️⃣ ${game.board[1]} | 3️⃣ ${game.board[2]}\n` +
-              `4️⃣ ${game.board[3]} | 5️⃣ ${game.board[4]} | 6️⃣ ${game.board[5]}\n` +
-              `7️⃣ ${game.board[6]} | 8️⃣ ${game.board[7]} | 9️⃣ ${game.board[8]}\n\n` +
+              `1️⃣ ${game.board[0]} | 2️⃣ ${game.board[1]} \vert{} 3️⃣ ${game.board[2]}\n` +
+              `4️⃣ ${game.board[3]} | 5️⃣ ${game.board[4]} \vert{} 6️⃣ ${game.board[5]}\n` +
+              `7️⃣ ${game.board[6]} | 8️⃣ ${game.board[7]} \vert{} 9️⃣ ${game.board[8]}\n\n` +
               `👉 Vez do jogador: @${game.turn.split('@')[0]} (Responda com o número de 1 a 9)`;
             await safeSendMessage(sock, from, { text: boardDisplay, mentions: [game.turn] });
             continue;
@@ -633,7 +660,7 @@ async function startBot() {
         continue;
       }
 
-      const isFreeCommand = ['/menualuguel', '/aluguel', '/alugar', '/menuadm', '/menu', '/ping', '/owner', '/dono', '/mtn', '/menuparceria', '/menujogos', '/menudono'].includes(command);
+      const isFreeCommand = ['/menualuguel', '/aluguel', '/alugar', '/menuadm', '/menu', '/ping', '/owner', '/dono', '/mtn', '/menuparceria', '/menujogos', '/menudono', '/sugestao', '/listsugestoes', '/upsugestao', '/rmsugestao'].includes(command);
 
       if (isGroup && !isOwner && !isFreeCommand) {
         const hasRent = isGroupRented(db.rentedGroups, from);
@@ -642,6 +669,124 @@ async function startBot() {
           await safeSendMessage(sock, from, { text: "Oii meus amores! 🥰 O aluguel deste grupo ainda não foi ativado! 🌙 Digite /menualuguel para ver os planos e ativar sua assinatura. Beijinhos 💋👋" }, { quoted: msg });
           continue;
         }
+      }
+
+      // SISTEMA DE SUGESTÕES
+      if (command === '/sugestao') {
+        const suggestionText = args.join(' ');
+        if (!suggestionText) {
+          await safeSendMessage(sock, from, { text: "⚠️ Escreva sua sugestão após o comando. Exemplo: `/sugestao Adicionar o comando de cassino em dobro`" }, { quoted: msg });
+          continue;
+        }
+
+        if (!db.suggestions) db.suggestions = {};
+        const sugId = db.suggestionCounter || 1;
+        db.suggestionCounter = sugId + 1;
+
+        db.suggestions[sugId] = {
+          id: sugId,
+          text: suggestionText,
+          sender: senderJid,
+          senderNumber: userNumber,
+          timestamp: Date.now()
+        };
+        saveDatabase(db);
+
+        await safeSendMessage(sock, from, { text: `✅ Sugestão enviada com sucesso ao Dono Supremo! (ID: \`${sugId}\`) 🌙` }, { quoted: msg });
+
+        if (db.ownerJid) {
+          const ownerAlert = `💡 *NOVA SUGESTÃO RECEBIDA - LUNAR SYSTEM ©*\n\n` +
+            `🆔 *ID da Sugestão:* \`${sugId}\`\n` +
+            `👤 *Usuário:* @${userNumber}\n` +
+            `📝 *Sugestão:* ${suggestionText}\n\n` +
+            `👉 Para aprovar e anunciar, digite:\n\`/upsugestao ${sugId}\`\n` +
+            `👉 Para remover, digite:\n\`/rmsugestao ${sugId}\``;
+
+          await safeSendMessage(sock, db.ownerJid, { text: ownerAlert, mentions: [senderJid] });
+        }
+        continue;
+      }
+
+      if (command === '/listsugestoes') {
+        if (!isOwner) {
+          await safeSendMessage(sock, from, { text: commandNotFoundMsg }, { quoted: msg });
+          continue;
+        }
+
+        const suggs = db.suggestions || {};
+        const entries = Object.entries(suggs);
+
+        if (entries.length === 0) {
+          await safeSendMessage(sock, from, { text: "📋 Nenhuma sugestão pendente no momento." }, { quoted: msg });
+          continue;
+        }
+
+        let rep = `📋 *LISTA DE SUGESTÕES PENDENTES* 🌙\n\n`;
+        const mentions = [];
+
+        for (const [id, data] of entries) {
+          rep += `🆔 *ID:* \`${id}\`\n` +
+            `👤 *Usuário:* @${data.senderNumber}\n` +
+            `📝 *Sugestão:* ${data.text}\n` +
+            `──────────────────────────\n`;
+          mentions.push(data.sender);
+        }
+
+        await safeSendMessage(sock, from, { text: rep, mentions }, { quoted: msg });
+        continue;
+      }
+
+      if (command === '/upsugestao') {
+        if (!isOwner) {
+          await safeSendMessage(sock, from, { text: commandNotFoundMsg }, { quoted: msg });
+          continue;
+        }
+
+        const sugId = args[0];
+        if (!sugId || !db.suggestions?.[sugId]) {
+          await safeSendMessage(sock, from, { text: "⚠️ ID de sugestão inválido. Use `/listsugestoes` para verificar os IDs." }, { quoted: msg });
+          continue;
+        }
+
+        const sugData = db.suggestions[sugId];
+        delete db.suggestions[sugId];
+        saveDatabase(db);
+
+        const announcement = `🎉 *SUGESTÃO APROVADA E ADICIONADA!* 🌙✨\n\n` +
+          `📝 *Sugestão:* "${sugData.text}"\n` +
+          `👤 *Idealizada por:* @${sugData.senderNumber}\n\n` +
+          `Obrigado por contribuir para a evolução da Lunar System ©! 🚀`;
+
+        const activeGroups = Object.keys(db.rentedGroups).filter(jid => isGroupRented(db.rentedGroups, jid));
+        let count = 0;
+        for (const gJid of activeGroups) {
+          try {
+            await safeSendMessage(sock, gJid, { text: announcement, mentions: [sugData.sender] });
+            count++;
+          } catch {}
+        }
+
+        await safeSendMessage(sock, from, { text: `✅ Sugestão ID \`${sugId}\` aprovada e anunciada em ${count} grupos ativos!` }, { quoted: msg });
+        continue;
+      }
+
+      if (command === '/rmsugestao') {
+        if (!isOwner) {
+          await safeSendMessage(sock, from, { text: commandNotFoundMsg }, { quoted: msg });
+          continue;
+        }
+
+        const sugId = args[0];
+        if (!sugId || !db.suggestions?.[sugId]) {
+          await safeSendMessage(sock, from, { text: "⚠️ ID de sugestão inválido ou não encontrado." }, { quoted: msg });
+          continue;
+        }
+
+        delete db.suggestions[sugId];
+        saveDatabase(db);
+
+        await safeSendMessage(sock, from, { text: `🗑️ Sugestão ID \`${sugId}\` removida e excluída com sucesso!` }, { quoted: msg });
+        continue;
       }
 
       if (command === '/menudono') {
@@ -657,6 +802,10 @@ async function startBot() {
           `› /rmaluguel - Remove o aluguel do grupo\n` +
           `› /addtempoextra - Soma horas extras\n` +
           `› /listalugueis - Lista todos os grupos alugados\n` +
+          `› /listsolicitacoesgrupo - Lista solicitações de entrada\n` +
+          `› /listsugestoes - Lista sugestões enviadas\n` +
+          `› /upsugestao <id> - Aprova/anuncia sugestão\n` +
+          `› /rmsugestao <id> - Remove sugestão\n` +
           `› /gerarpagamento - Gera cobrança PIX avulsa\n` +
           `› /saldo - Consulta saldo da carteira Lunar\n` +
           `› /sacar - Realiza saque total via PIX\n` +
@@ -1475,6 +1624,7 @@ async function startBot() {
           `› /menuparceria - Sistema de parcerias oficiais\n` +
           `› /menujogos - Cassino e jogos de aposta\n` +
           `› /menuadm - Painel de administração do grupo\n` +
+          `› /sugestao <txt> - Envia sugestão para o dono\n` +
           `› /owner ou /dono - Contato do criador\n` +
           `› /ping - Verifica latência do bot\n\n` +
           `✦ LUNAR SYSTEM © ✨`;
