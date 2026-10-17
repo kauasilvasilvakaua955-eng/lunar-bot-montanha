@@ -29,6 +29,22 @@ function loadDatabase() {
       wallets: {},
       groupRequests: {},
       suggestions: {},
+      userProfessions: {},
+      cooldowns: {},
+      shopProducts: {
+        "trocar_profissao": {
+          id: "trocar_profissao",
+          name: "Trocar de Profissão",
+          desc: "Troca sua profissão por uma nova aleatória com chances de salários melhores ou piores!",
+          price: 50
+        }
+      },
+      gameConfigs: {
+        minSalary: 50,
+        workCooldownHours: 24,
+        robCooldownHours: 12
+      },
+      diceWinStreak: {},
       suggestionCounter: 1,
       requestCounter: 1,
       rentalPlans: {
@@ -53,6 +69,18 @@ function loadDatabase() {
     if (!data.wallets) data.wallets = {};
     if (!data.groupRequests) data.groupRequests = {};
     if (!data.suggestions) data.suggestions = {};
+    if (!data.userProfessions) data.userProfessions = {};
+    if (!data.cooldowns) data.cooldowns = {};
+    if (!data.shopProducts) data.shopProducts = {
+      "trocar_profissao": {
+        id: "trocar_profissao",
+        name: "Trocar de Profissão",
+        desc: "Troca sua profissão por uma nova aleatória com chances de salários melhores ou piores!",
+        price: 50
+      }
+    };
+    if (!data.gameConfigs) data.gameConfigs = { minSalary: 50, workCooldownHours: 24, robCooldownHours: 12 };
+    if (!data.diceWinStreak) data.diceWinStreak = {};
     if (data.suggestionCounter === undefined) data.suggestionCounter = 1;
     if (data.requestCounter === undefined) data.requestCounter = 1;
     if (!data.rentalPlans) data.rentalPlans = {
@@ -62,7 +90,7 @@ function loadDatabase() {
     };
     return data;
   } catch {
-    return { ownerJid: null, ownerName: "MONTANHA DEV", ownerNumber: FIXED_OWNER_NUMBER, rentedGroups: {}, blacklistedUsers: [], customCommands: {}, groupSettings: {}, partners: {}, groupSchedules: {}, mutedUsers: {}, wallets: {}, groupRequests: {}, suggestions: {}, suggestionCounter: 1, requestCounter: 1, rentalPlans: {} };
+    return { ownerJid: null, ownerName: "MONTANHA DEV", ownerNumber: FIXED_OWNER_NUMBER, rentedGroups: {}, blacklistedUsers: [], customCommands: {}, groupSettings: {}, partners: {}, groupSchedules: {}, mutedUsers: {}, wallets: {}, groupRequests: {}, suggestions: {}, userProfessions: {}, cooldowns: {}, shopProducts: {}, gameConfigs: { minSalary: 50, workCooldownHours: 24, robCooldownHours: 12 }, diceWinStreak: {}, suggestionCounter: 1, requestCounter: 1, rentalPlans: {} };
   }
 }
 
@@ -86,10 +114,6 @@ function updateBalance(db, userJid, amount) {
   return db.wallets[userJid];
 }
 
-function calculateHouseTax(amount) {
-  return Math.max(1, Math.floor(amount * 0.03));
-}
-
 function isGroupRented(rentedGroups, groupJid) {
   const group = rentedGroups[groupJid];
   if (!group || !group.expireAt) return false;
@@ -100,7 +124,7 @@ async function safeSendMessage(sock, jid, content, options = {}) {
   try {
     return await sock.sendMessage(jid, content, options);
   } catch (err) {
-    console.log(`⚠️ Não foi possível enviar mensagem em ${jid}:${err.message}`);
+    console.log(`⚠️ Não foi possível enviar mensagem em ${jid}: ${err.message}`);
     return null;
   }
 }
@@ -138,30 +162,32 @@ function extractInviteCode(text) {
   return match ? match[1] : null;
 }
 
+const PROFESSIONS = [
+  { name: "Freelancer Dev", multiplier: 1.0 },
+  { name: "Ajudante de Limpeza", multiplier: 0.8 },
+  { name: "Bater Laje", multiplier: 1.2 },
+  { name: "Pedreiro", multiplier: 1.3 },
+  { name: "Descarregar Caminhão", multiplier: 1.1 },
+  { name: "Atendente de Fast Food", multiplier: 0.9 },
+  { name: "Entregador de App", multiplier: 1.0 },
+  { name: "Motorista de Uber", multiplier: 1.15 },
+  { name: "Segurança Noturno", multiplier: 1.25 },
+  { name: "Eletricista", multiplier: 1.4 }
+];
+
+function getRandomProfession() {
+  return PROFESSIONS[Math.floor(Math.random() * PROFESSIONS.length)];
+}
+
 function initBackgroundTasks(sock) {
-  // LIMPEZA AUTOMÁTICA DE CACHE E LOGS A CADA 30 MINUTOS
   setInterval(() => {
     try {
       if (global.gc) {
         global.gc();
-        console.log('🧹 [AUTO-LIMPEZA] Coleta de lixo (GC) executada com sucesso.');
       }
-      const sessionPath = path.join(__dirname, 'session');
-      if (fs.existsSync(sessionPath)) {
-        const files = fs.readdirSync(sessionPath);
-        let cleaned = 0;
-        for (const file of files) {
-          if (file.includes('pre-key') && parseInt(file.split('-')[1]) < Date.now() - 86400000) {
-            // Mantém chaves recentes, limpa obsoletas se necessário
-          }
-        }
-      }
-    } catch (e) {
-      console.log('⚠️ Erro na limpeza automática de cache:', e.message);
-    }
+    } catch (e) {}
   }, 30 * 60 * 1000);
 
-  // AGENDAMENTOS E MUTES
   setInterval(async () => {
     const db = loadDatabase();
     const now = new Date();
@@ -286,7 +312,7 @@ async function startBot() {
     }
 
     if (action === 'remove' && settings.saida) {
-      const saidaText = `Poxa... Mais um corpinho que parte para outro universo... 🌌💔 O vento sopra frio na Lunar System e sentimos uma tristeza profunda por ver um membro nos deixar... Até logo! 🌙💧`;
+      const saidaText = `Poxa... Mais um corpinho que parte para outro universo... 🌌💔 O vento sobra frio na Lunar System e sentimos uma tristeza profunda por ver um membro nos deixar... Até logo! 🌙💧`;
       await safeSendMessage(sock, groupJid, { text: saidaText }).catch(() => {});
     }
   });
@@ -358,6 +384,62 @@ async function startBot() {
       // SESSÕES INTERATIVAS DO DONO
       if (isOwner && ownerInteractiveSessions.has(senderJid)) {
         const session = ownerInteractiveSessions.get(senderJid);
+
+        if (session.step === 'ADD_PROD_ID') {
+          session.prodId = trimmedText.toLowerCase().replace(/\s+/g, '_');
+          session.step = 'ADD_PROD_NAME';
+          ownerInteractiveSessions.set(senderJid, session);
+          await safeSendMessage(sock, from, { text: "📦 *Passo 2/4:* Digite o Nome do Produto (ex: Trocar de Profissão):" }, { quoted: msg });
+          continue;
+        }
+
+        if (session.step === 'ADD_PROD_NAME') {
+          session.prodName = trimmedText;
+          session.step = 'ADD_PROD_DESC';
+          ownerInteractiveSessions.set(senderJid, session);
+          await safeSendMessage(sock, from, { text: "📋 *Passo 3/4:* Digite a Descrição do produto:" }, { quoted: msg });
+          continue;
+        }
+
+        if (session.step === 'ADD_PROD_DESC') {
+          session.prodDesc = trimmedText;
+          session.step = 'ADD_PROD_PRICE';
+          ownerInteractiveSessions.set(senderJid, session);
+          await safeSendMessage(sock, from, { text: "💳 *Passo 4/4:* Digite o Valor em coins ¢ (ex: 50):" }, { quoted: msg });
+          continue;
+        }
+
+        if (session.step === 'ADD_PROD_PRICE') {
+          const price = parseInt(trimmedText);
+          if (isNaN(price) || price <= 0) {
+            await safeSendMessage(sock, from, { text: "⚠️ Informe um valor válido em coins!" }, { quoted: msg });
+            continue;
+          }
+
+          db.shopProducts[session.prodId] = {
+            id: session.prodId,
+            name: session.prodName,
+            desc: session.prodDesc,
+            price: price
+          };
+          saveDatabase(db);
+          ownerInteractiveSessions.delete(senderJid);
+          await safeSendMessage(sock, from, { text: `✅ *PRODUTO CADASTRADO COM SUCESSO!*\n\n📦 *ID:* \`${session.prodId}\`\n📌 *Nome:* ${session.prodName}\n📋 *Descrição:* ${session.prodDesc}\n💳 *Valor:* ${price}¢` }, { quoted: msg });
+          continue;
+        }
+
+        if (session.step === 'EDIT_PROD_SELECT') {
+          const prodId = trimmedText.toLowerCase();
+          if (!db.shopProducts[prodId]) {
+            await safeSendMessage(sock, from, { text: "⚠️ ID do produto não encontrado. Tente novamente:" }, { quoted: msg });
+            continue;
+          }
+          session.prodId = prodId;
+          session.step = 'ADD_PROD_NAME';
+          ownerInteractiveSessions.set(senderJid, session);
+          await safeSendMessage(sock, from, { text: `✏️ Editando \`${prodId}\`.\n📦 *Novo Nome do Produto:*` }, { quoted: msg });
+          continue;
+        }
 
         if (session.step === 'ADD_RENT_DAYS') {
           const days = parseInt(trimmedText);
@@ -530,13 +612,12 @@ async function startBot() {
             const isWin = winPatterns.some(p => game.board[p[0]] !== ' ' && game.board[p[0]] === game.board[p[1]] && game.board[p[1]] === game.board[p[2]]);
 
             if (isWin) {
-              const houseTax = calculateHouseTax(game.bet);
-              const prize = (game.bet * 2) - houseTax;
+              const prize = game.bet * 2;
               updateBalance(db, senderJid, prize);
               
               tictactoeGames.delete(from);
               await safeSendMessage(sock, from, { 
-                text: `🎉 *FIM DE JOGO!* @${senderJid.split('@')[0]} venceu a partida de Jogo da Velha!\n💰 *Prêmio Líquido:* +${prize}¢ (Taxa da casa: ${houseTax}¢)`,
+                text: `🎉 *FIM DE JOGO!* @${senderJid.split('@')[0]} venceu a partida de Jogo da Velha!\n💰 *Prêmio Líquido:* +${prize}¢`,
                 mentions: [senderJid]
               });
               continue;
@@ -660,7 +741,7 @@ async function startBot() {
         continue;
       }
 
-      const isFreeCommand = ['/menualuguel', '/aluguel', '/alugar', '/menuadm', '/menu', '/ping', '/owner', '/dono', '/mtn', '/menuparceria', '/menujogos', '/menudono', '/sugestao', '/listsugestoes', '/upsugestao', '/rmsugestao'].includes(command);
+      const isFreeCommand = ['/menualuguel', '/aluguel', '/alugar', '/menuadm', '/menu', '/ping', '/owner', '/dono', '/mtn', '/menuparceria', '/menujogos', '/menudono', '/sugestao', '/listsugestoes', '/upsugestao', '/rmsugestao', '/menulojacoin', '/catálogo', '/catalogo', '/carteira', '/comprar', '/trabalhar', '/roubar'].includes(command);
 
       if (isGroup && !isOwner && !isFreeCommand) {
         const hasRent = isGroupRented(db.rentedGroups, from);
@@ -669,6 +750,229 @@ async function startBot() {
           await safeSendMessage(sock, from, { text: "Oii meus amores! 🥰 O aluguel deste grupo ainda não foi ativado! 🌙 Digite /menualuguel para ver os planos e ativar sua assinatura. Beijinhos 💋👋" }, { quoted: msg });
           continue;
         }
+      }
+
+      // LOJINHA DE COINS
+      if (command === '/menulojacoin') {
+        const shopMenu = `🛍️ *LOJINHA LUNAR COINS — LUNAR SYSTEM ©* 🌙\n\n` +
+          `❖ 🛒 MENU DE COMPRAS\n` +
+          `› /carteira - Consulta seu saldo em Lunar Cents (¢)\n` +
+          `› /catálogo - Exibe os produtos disponíveis na loja\n` +
+          `› /comprar <id_produto> - Realiza a compra do produto desejado\n\n` +
+          `✨ Invista seus ganhos e evolua na Lunar System!\n` +
+          `✦ LUNAR SYSTEM © ✨`;
+
+        await safeSendMessage(sock, from, { text: shopMenu }, { quoted: msg });
+        continue;
+      }
+
+      if (command === '/catálogo' || command === '/catalogo') {
+        const prods = Object.values(db.shopProducts || {});
+        if (prods.length === 0) {
+          await safeSendMessage(sock, from, { text: "🛍️ A Lojinha de Coins está sem produtos cadastrados no momento!" }, { quoted: msg });
+          continue;
+        }
+
+        let catText = `🛍️ *CATÁLOGO DE PRODUTOS LUNAR COIN (¢)* 🌙\n\n`;
+        for (const p of prods) {
+          catText += `Produto 📦: *${p.name}* (ID: \`${p.id}\`)\n` +
+            `Descrição 📋: ${p.desc}\n` +
+            `Valor 💳: *${p.price}¢*\n\n` +
+            `👉 Use \`/comprar ${p.id}\` para comprar 🛒\n` +
+            `──────────────────────────\n`;
+        }
+
+        await safeSendMessage(sock, from, { text: catText }, { quoted: msg });
+        continue;
+      }
+
+      if (command === '/comprar') {
+        const prodId = args[0]?.toLowerCase();
+        const prod = db.shopProducts[prodId];
+
+        if (!prod) {
+          await safeSendMessage(sock, from, { text: "⚠️ Produto não encontrado! Digite `/catálogo` para ver os produtos válidos." }, { quoted: msg });
+          continue;
+        }
+
+        const userBal = getBalance(db, senderJid);
+        if (userBal < prod.price) {
+          await safeSendMessage(sock, from, { text: `⚠️ Saldo insuficiente! O produto custa *${prod.price}¢* e você possui *${userBal}¢*.` }, { quoted: msg });
+          continue;
+        }
+
+        updateBalance(db, senderJid, -prod.price);
+
+        if (prodId === 'trocar_profissao') {
+          const newProf = getRandomProfession();
+          db.userProfessions[senderJid] = newProf;
+          saveDatabase(db);
+
+          await safeSendMessage(sock, from, { text: `🎉 *COMPRA REALIZADA COM SUCESSO!* 🛒\n\nVocê adquiriu *${prod.name}* por *${prod.price}¢*!\n\n💼 *Sua nova profissão é:* **${newProf.name}**!\nMultiplicador salarial: *${newProf.multiplier}x*` }, { quoted: msg });
+          continue;
+        }
+
+        await safeSendMessage(sock, from, { text: `🎉 *COMPRA REALIZADA COM SUCESSO!* 🛒\n\nVocê comprou *${prod.name}* por *${prod.price}¢*! Aproveite seu benefício.` }, { quoted: msg });
+        continue;
+      }
+
+      // NOVO SISTEMA TRABALHAR & ROUBAR
+      if (command === '/trabalhar') {
+        const now = Date.now();
+        const cooldownHours = db.gameConfigs?.workCooldownHours || 24;
+        const cooldownMs = cooldownHours * 60 * 60 * 1000;
+        const lastWork = db.cooldowns[`work_${senderJid}`] || 0;
+
+        if (now - lastWork < cooldownMs) {
+          const remainingMs = cooldownMs - (now - lastWork);
+          const remainingHours = Math.ceil(remainingMs / (1000 * 60 * 60));
+          await safeSendMessage(sock, from, { text: `💼 *CLT INFORMA:* Você já trabalhou demais e cumpriu suas 8 hrs de trabalho de acordo com a CLT! Não há mais expediente 6x1 por hoje. Volte daqui a *${remainingHours}h* para trabalhar novamente! 🛑` }, { quoted: msg });
+          continue;
+        }
+
+        if (!db.userProfessions[senderJid]) {
+          db.userProfessions[senderJid] = getRandomProfession();
+        }
+
+        const prof = db.userProfessions[senderJid];
+        const baseSalary = db.gameConfigs?.minSalary || 50;
+        const finalSalary = Math.floor(baseSalary * prof.multiplier);
+
+        updateBalance(db, senderJid, finalSalary);
+        db.cooldowns[`work_${senderJid}`] = now;
+        saveDatabase(db);
+
+        await safeSendMessage(sock, from, { text: `🛠️ *DIA DE TRABALHO CONCLUÍDO!*\n\n💼 *Profissão:* ${prof.name}\n💰 *Salário Recebido:* +${finalSalary}¢ (Base: ${baseSalary}¢)\n\nVolte amanhã para cumprir seu próximo expediente!` }, { quoted: msg });
+        continue;
+      }
+
+      if (command === '/roubar') {
+        const targetUser = msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+        if (!targetUser) {
+          await safeSendMessage(sock, from, { text: "⚠️ Marque quem você deseja roubar: `/roubar @mencao`" }, { quoted: msg });
+          continue;
+        }
+
+        if (targetUser === senderJid) {
+          await safeSendMessage(sock, from, { text: "⚠️ Você não pode roubar a si mesmo!" }, { quoted: msg });
+          continue;
+        }
+
+        const now = Date.now();
+        const cooldownHours = db.gameConfigs?.robCooldownHours || 12;
+        const cooldownMs = cooldownHours * 60 * 60 * 1000;
+        const lastRob = db.cooldowns[`rob_${senderJid}`] || 0;
+
+        if (now - lastRob < cooldownMs) {
+          const remainingMs = cooldownMs - (now - lastRob);
+          const remainingHours = Math.ceil(remainingMs / (1000 * 60 * 60));
+          await safeSendMessage(sock, from, { text: `🥷 A polícia está na sua cola! Aguarde *${remainingHours}h* para tentar um novo assalto.` }, { quoted: msg });
+          continue;
+        }
+
+        const victimBal = getBalance(db, targetUser);
+        if (victimBal < 25) {
+          await safeSendMessage(sock, from, { text: `🥷 A vítima é tão pobre que nem compensa o assalto (Saldo: *${victimBal}¢*). O mínimo para roubo é 25¢!` }, { quoted: msg });
+          continue;
+        }
+
+        const success = Math.random() <= 0.50;
+
+        if (success) {
+          const maxStolen = Math.floor(victimBal * 0.70);
+          const stolenAmount = Math.floor(Math.random() * (maxStolen - 25 + 1)) + 25;
+
+          updateBalance(db, targetUser, -stolenAmount);
+          updateBalance(db, senderJid, stolenAmount);
+          db.cooldowns[`rob_${senderJid}`] = now;
+          saveDatabase(db);
+
+          await safeSendMessage(sock, from, { text: `🥷 *ASSALTO BEM SUCEDIDO!*\n\n💰 @${senderJid.split('@')[0]} passou a perna em @${targetUser.split('@')[0]} e roubou *${stolenAmount}¢*!`, mentions: [senderJid, targetUser] });
+        } else {
+          const penalty = Math.min(20, getBalance(db, senderJid));
+          updateBalance(db, senderJid, -penalty);
+          db.cooldowns[`rob_${senderJid}`] = now;
+          saveDatabase(db);
+
+          await safeSendMessage(sock, from, { text: `🚨 *MICO!* O assalto deu errado e você foi pego em flagrante! Pagou *${penalty}¢* de fiança.`, mentions: [senderJid] });
+        }
+        continue;
+      }
+
+      // COMANDOS DE GERENCIAMENTO DE JOGOS NO MENU ADM
+      if (isGroup && (command === '/resetcoinsjogos' || command === '/editartempojogo' || command === '/editarsalariominimojogo')) {
+        const groupMetadata = await sock.groupMetadata(from).catch(() => null);
+        const participants = groupMetadata?.participants || [];
+        const senderParticipant = participants.find(p => p.id === senderJid);
+        const isSenderAdmin = senderParticipant?.admin === 'admin' || senderParticipant?.admin === 'superadmin';
+
+        if (!isSenderAdmin && !isOwner) {
+          await safeSendMessage(sock, from, { text: "⚠️ Apenas administradores do grupo podem usar este comando!" }, { quoted: msg });
+          continue;
+        }
+
+        if (command === '/resetcoinsjogos') {
+          const target = args[0]?.toLowerCase();
+          const mentioned = msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+
+          if (target === 'all') {
+            for (const p of participants) {
+              db.wallets[p.id] = 10;
+            }
+            saveDatabase(db);
+            await safeSendMessage(sock, from, { text: "🔄 *RESET DE COINS CONCLUÍDO!* O saldo de todos os membros do grupo foi resetado para *10¢*." });
+            continue;
+          }
+
+          if (mentioned) {
+            db.wallets[mentioned] = 10;
+            saveDatabase(db);
+            await safeSendMessage(sock, from, { text: `🔄 Saldo do membro @${mentioned.split('@')[0]} resetado para *10¢*!`, mentions: [mentioned] });
+            continue;
+          }
+
+          await safeSendMessage(sock, from, { text: "⚠️ Uso correto: `/resetcoinsjogos @mencao` ou `/resetcoinsjogos all`" }, { quoted: msg });
+          continue;
+        }
+
+        if (command === '/editartempojogo') {
+          const hours = parseInt(args[0]);
+          if (isNaN(hours) || hours <= 0) {
+            await safeSendMessage(sock, from, { text: "⚠️ Informe um tempo válido em horas! Exemplo: `/editartempojogo 1`" }, { quoted: msg });
+            continue;
+          }
+          if (!db.gameConfigs) db.gameConfigs = {};
+          db.gameConfigs.workCooldownHours = hours;
+          saveDatabase(db);
+          await safeSendMessage(sock, from, { text: `⏰ Cooldown de trabalho alterado com sucesso para *${hours}h*!` });
+          continue;
+        }
+
+        if (command === '/editarsalariominimojogo') {
+          const val = parseInt(args[0]);
+          if (isNaN(val) || val <= 0) {
+            await safeSendMessage(sock, from, { text: "⚠️ Informe um valor válido! Exemplo: `/editarsalariominimojogo 50`" }, { quoted: msg });
+            continue;
+          }
+          if (!db.gameConfigs) db.gameConfigs = {};
+          db.gameConfigs.minSalary = val;
+          saveDatabase(db);
+          await safeSendMessage(sock, from, { text: `💵 Salário Mínimo do jogo ajustado para *${val}¢* com sucesso!` });
+          continue;
+        }
+      }
+
+      // COMANDOS DO DONO PARA GERENCIAR LOJINHA DE COIN
+      if (command === '/addprodutocoin' && isOwner) {
+        ownerInteractiveSessions.set(senderJid, { step: 'ADD_PROD_ID' });
+        await safeSendMessage(sock, from, { text: "📦 *Passo 1/4:* Digite o ID do Produto (ex: trocar_profissao):" }, { quoted: msg });
+        continue;
+      }
+
+      if (command === '/editprodutocoin' && isOwner) {
+        ownerInteractiveSessions.set(senderJid, { step: 'EDIT_PROD_SELECT' });
+        await safeSendMessage(sock, from, { text: "✏️ Digite o ID do produto que deseja editar:" }, { quoted: msg });
+        continue;
       }
 
       // SISTEMA DE SUGESTÕES
@@ -802,6 +1106,8 @@ async function startBot() {
           `› /rmaluguel - Remove o aluguel do grupo\n` +
           `› /addtempoextra - Soma horas extras\n` +
           `› /listalugueis - Lista todos os grupos alugados\n` +
+          `› /addprodutocoin - Adiciona produto à lojinha\n` +
+          `› /editprodutocoin - Edita produto da lojinha\n` +
           `› /listsolicitacoesgrupo - Lista solicitações de entrada\n` +
           `› /listsugestoes - Lista sugestões enviadas\n` +
           `› /upsugestao <id> - Aprova/anuncia sugestão\n` +
@@ -918,6 +1224,10 @@ async function startBot() {
           `› /listmutados - Lista membros silenciados\n` +
           `› /tagall - Marcação geral de todos\n` +
           `› /limparchat - Limpa o chat do grupo\n\n` +
+          `❖ 🎮 GERENCIAMENTO DE JOGOS (ADM)\n` +
+          `› /resetcoinsjogos @mencao|all - Reseta saldo de moedas\n` +
+          `› /editartempojogo <horas> - Ajusta cooldown de jogos\n` +
+          `› /editarsalariominimojogo <valor> - Define salário mínimo\n\n` +
           `✦ LUNAR SYSTEM © ✨`;
 
         await safeSendMessage(sock, from, { text: admMenu }, { quoted: msg });
@@ -1334,7 +1644,7 @@ async function startBot() {
         continue;
       }
 
-      const isGameCommand = ['/menujogos', '/carteira', '/dados', '/dardo', '/velha', '/slots'].includes(command);
+      const isGameCommand = ['/menujogos', '/carteira', '/dados', '/dardo', '/velha', '/slots', '/trabalhar', '/roubar'].includes(command);
       if (isGameCommand && isGroup) {
         const settings = db.groupSettings[from] || {};
         if (!settings.jogos && !isOwner) {
@@ -1347,6 +1657,9 @@ async function startBot() {
             `❖ 🎮 CASSINO & JOGOS\n` +
             `› /menujogos - Exibe o painel de jogos\n` +
             `› /carteira - Consulta seus Lunar Cents (¢)\n` +
+            `› /trabalhar - Exerce sua profissão diária\n` +
+            `› /roubar @membro - Tenta assaltar outro membro\n` +
+            `› /menulojacoin - Acessa a Lojinha de Coins\n` +
             `› /dados <valor> - Roda o dado de sorte (1 a 6x)\n` +
             `› /dardo <valor> - Tiro ao alvo de precisão (2x)\n` +
             `› /velha @rival <valor> - Duelo PvP no Jogo da Velha\n` +
@@ -1359,7 +1672,8 @@ async function startBot() {
 
         if (command === '/carteira') {
           const balance = getBalance(db, senderJid);
-          await safeSendMessage(sock, from, { text: `💳 *CARTEIRA LUNAR*\n\n👤 *Jogador:* @${userNumber}\n💰 *Saldo:* ${balance}¢`, mentions: [senderJid] }, { quoted: msg });
+          const prof = db.userProfessions[senderJid]?.name || "Desempregado (Use /trabalhar)";
+          await safeSendMessage(sock, from, { text: `💳 *CARTEIRA LUNAR*\n\n👤 *Jogador:* @${userNumber}\n💼 *Profissão:* ${prof}\n💰 *Saldo:* ${balance}¢`, mentions: [senderJid] }, { quoted: msg });
           continue;
         }
 
@@ -1376,18 +1690,49 @@ async function startBot() {
             continue;
           }
 
-          const roll = Math.floor(Math.random() * 6) + 1;
+          // DIFICULDADE DINÂMICA
+          const streak = db.diceWinStreak[senderJid] || 0;
+          let diffMultiplier = 1.0;
+
+          // +5% por ganho consecutivo
+          diffMultiplier += (streak * 0.05);
+
+          // Escala progressiva por valor apostado (iniciando em 10 ate 1.000.000+ com limite em +70%)
+          if (bet >= 10) {
+            let betDiff = 0;
+            if (bet >= 1000000) {
+              betDiff = 0.70;
+            } else {
+              betDiff = (bet / 1000000) * 0.70;
+            }
+            diffMultiplier += betDiff;
+          }
+
+          // Chance padrão do dado caindo em 1 (1 de 6 = 16.6%) ajustado pela dificuldade
+          const baseLossChance = 0.1666;
+          const finalLossChance = Math.min(0.85, baseLossChance * diffMultiplier);
+
+          const isLoss = Math.random() < finalLossChance;
+          let roll = 1;
+
+          if (isLoss) {
+            roll = 1;
+          } else {
+            roll = Math.floor(Math.random() * 5) + 2;
+          }
 
           if (roll === 1) {
             updateBalance(db, senderJid, -bet);
+            db.diceWinStreak[senderJid] = 0;
+            saveDatabase(db);
             await safeSendMessage(sock, from, { text: `🎲 *O Dado Rolou... e caiu em [ 1 ]!* 💥\n\n❌ Poxa, você tirou 1 e perdeu sua aposta de *${bet}¢*!` }, { quoted: msg });
           } else {
-            const rawWin = bet * roll;
-            const houseTax = calculateHouseTax(rawWin);
-            const netWin = rawWin - houseTax - bet;
+            const netWin = bet * (roll - 1);
             updateBalance(db, senderJid, netWin);
+            db.diceWinStreak[senderJid] = streak + 1;
+            saveDatabase(db);
 
-            await safeSendMessage(sock, from, { text: `🎲 *O Dado Rolou... e caiu em [ ${roll} ]!* 🎉\n\n✨ Você multiplicou por *${roll}x*!\n💰 *Lucro Líquido:* +${netWin}¢ (Taxa da casa: ${houseTax}¢)` }, { quoted: msg });
+            await safeSendMessage(sock, from, { text: `🎲 *O Dado Rolou... e caiu em [ ${roll} ]!* 🎉\n\n✨ Você multiplicou por *${roll}x*!\n💰 *Lucro Líquido:* +${netWin}¢` }, { quoted: msg });
           }
           continue;
         }
@@ -1408,12 +1753,10 @@ async function startBot() {
           const hit = Math.random() <= 0.40;
 
           if (hit) {
-            const rawWin = bet * 2;
-            const houseTax = calculateHouseTax(rawWin);
-            const netWin = rawWin - houseTax - bet;
+            const netWin = bet;
             updateBalance(db, senderJid, netWin);
 
-            await safeSendMessage(sock, from, { text: `🎯 *BULLSEYE!* Você acertou em cheio no centro do alvo!\n\n✨ Multiplicador *2x* ativado!\n💰 *Lucro Líquido:* +${netWin}¢ (Taxa da casa: ${houseTax}¢)` }, { quoted: msg });
+            await safeSendMessage(sock, from, { text: `🎯 *BULLSEYE!* Você acertou em cheio no centro do alvo!\n\n✨ Multiplicador *2x* ativado!\n💰 *Lucro Líquido:* +${netWin}¢` }, { quoted: msg });
           } else {
             updateBalance(db, senderJid, -bet);
             await safeSendMessage(sock, from, { text: `🎯 *O dardo voou longe...* e errou o alvo! 💥\n\n❌ Você perdeu sua aposta de *${bet}¢*!` }, { quoted: msg });
@@ -1512,13 +1855,11 @@ async function startBot() {
             `[ ${s1} | ${s2} | ${s3} ]\n\n`;
 
           if (multiplier > 0) {
-            const rawWin = bet * multiplier;
-            const houseTax = calculateHouseTax(rawWin);
-            const netWin = rawWin - houseTax - bet;
+            const netWin = bet * (multiplier - 1);
             updateBalance(db, senderJid, netWin);
 
             const jackpotHeader = multiplier === 10 ? "🚨 *MEGA JACKPOT 10X DETONADO!* 🚨" : "🎉 *GRANDE VITÓRIA!*";
-            await safeSendMessage(sock, from, { text: `${slotDisplay}${jackpotHeader}\n\n✨ Multiplicador: *${multiplier}x*\n💰 *Lucro Líquido:* +${netWin}¢ (Taxa da casa: ${houseTax}¢)` }, { quoted: msg });
+            await safeSendMessage(sock, from, { text: `${slotDisplay}${jackpotHeader}\n\n✨ Multiplicador: *${multiplier}x*\n💰 *Lucro Líquido:* +${netWin}¢` }, { quoted: msg });
           } else {
             updateBalance(db, senderJid, -bet);
             await safeSendMessage(sock, from, { text: `${slotDisplay}💥 Poxa, os símbolos não alinharam!\n❌ Você perdeu sua aposta de *${bet}¢*!` }, { quoted: msg });
@@ -1623,6 +1964,7 @@ async function startBot() {
           `› /aluguel - Tabela de preços e planos\n` +
           `› /menuparceria - Sistema de parcerias oficiais\n` +
           `› /menujogos - Cassino e jogos de aposta\n` +
+          `› /menulojacoin - Lojinha de Lunar Coins\n` +
           `› /menuadm - Painel de administração do grupo\n` +
           `› /sugestao <txt> - Envia sugestão para o dono\n` +
           `› /owner ou /dono - Contato do criador\n` +
