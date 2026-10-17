@@ -815,7 +815,7 @@ async function startBot() {
         continue;
       }
 
-      const isFreeCommand = ['/menualuguel', '/aluguel', '/alugar', '/menuadm', '/menu', '/ping', '/owner', '/dono', '/mtn', '/menuparceria', '/menujogos', '/menudono', '/sugestao', '/listsugestoes', '/upsugestao', '/rmsugestao', '/menulojacoin', '/catálogo', '/catalogo', '/carteira', '/comprar', '/trabalhar', '/roubar', '/minerar', '/minerios', '/venderminerios'].includes(command);
+      const isFreeCommand = ['/menualuguel', '/aluguel', '/alugar', '/menuadm', '/menu', '/ping', '/owner', '/dono', '/mtn', '/menuparceria', '/menudono', '/sugestao', '/listsugestoes', '/upsugestao', '/rmsugestao'].includes(command);
 
       if (isGroup && !isOwner && !isFreeCommand) {
         const hasRent = isGroupRented(db.rentedGroups, from);
@@ -827,7 +827,7 @@ async function startBot() {
       }
 
       // VERIFICAÇÃO GLOBAL DE JOGOS DESLIGADOS (/jogos off)
-      const isGameCommand = ['/menujogos', '/carteira', '/dados', '/dardo', '/velha', '/slots', '/trabalhar', '/roubar', '/minerar', '/minerios', '/venderminerios'].includes(command);
+      const isGameCommand = ['/menujogos', '/carteira', '/dados', '/dardo', '/velha', '/slots', '/trabalhar', '/roubar', '/minerar', '/minerios', '/venderminerios', '/menulojacoin', '/catálogo', '/catalogo', '/comprar'].includes(command);
       if (isGameCommand && isGroup) {
         const settings = db.groupSettings[from] || {};
         if (!settings.jogos && !isOwner) {
