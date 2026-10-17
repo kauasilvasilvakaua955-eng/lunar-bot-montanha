@@ -201,7 +201,7 @@ async function safeSendMessage(sock, jid, content, options = {}) {
   try {
     return await sock.sendMessage(jid, content, options);
   } catch (err) {
-    console.log(`⚠️ Não foi possível enviar mensagem em ${jid}:${err.message}`);
+    console.log(`⚠️ Não foi possível enviar mensagem em ${jid}: ${err.message}`);
     return null;
   }
 }
@@ -1426,7 +1426,7 @@ async function startBot() {
         }
 
         saveDatabase(db);
-        await safeSendMessage(sock, from, { text: `✅ *APROVAÇÃO EM MASSA CONCLUÍDA!*\nO bot entrou com sucesso em ${successCount} de${entries.length} grupo(s).` }, { quoted: msg });
+        await safeSendMessage(sock, from, { text: `✅ *APROVAÇÃO EM MASSA CONCLUÍDA!*\nO bot entrou com sucesso em ${successCount} de ${entries.length} grupo(s).` }, { quoted: msg });
         continue;
       }
 
@@ -2074,7 +2074,7 @@ async function startBot() {
           }
 
           const slotDisplay = `🎰 *CAÇA-NÍQUEIS LUNAR NEON* 🎰\n\n` +
-            `[ ${s1} | ${s2} \vert{}${s3} ]\n\n`;
+            `[ ${s1} | ${s2} | ${s3} ]\n\n`;
 
           if (multiplier > 0) {
             const netWin = bet * (multiplier - 1);
@@ -2208,7 +2208,7 @@ async function startBot() {
         const ownerName = db.ownerName || "MONTANHA DEV";
 
         const vcard = 'BEGIN:VCARD\n' +
-          'VERSION:3.0\n` +
+          'VERSION:3.0\n' +
           `FN:${ownerName}\n` +
           `ORG:${config.COMPANY_NAME};\n` +
           `TEL;type=CELL;type=VOICE;waid=${ownerNum}:+${ownerNum}\n` +
