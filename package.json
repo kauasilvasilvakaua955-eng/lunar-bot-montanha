@@ -1,0 +1,15 @@
+{
+  "name": "lunar-bot",
+  "version": "2.0.0",
+  "description": "Lunar Bot WhatsApp Automation",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.5",
+    "axios": "^1.6.8",
+    "pino": "^8.19.0",
+    "qrcode": "^1.5.3"
+  }
+}
