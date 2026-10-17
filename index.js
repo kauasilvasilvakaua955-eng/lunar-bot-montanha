@@ -826,6 +826,16 @@ async function startBot() {
         }
       }
 
+      // VERIFICAÇÃO GLOBAL DE JOGOS DESLIGADOS (/jogos off)
+      const isGameCommand = ['/menujogos', '/carteira', '/dados', '/dardo', '/velha', '/slots', '/trabalhar', '/roubar', '/minerar', '/minerios', '/venderminerios'].includes(command);
+      if (isGameCommand && isGroup) {
+        const settings = db.groupSettings[from] || {};
+        if (!settings.jogos && !isOwner) {
+          await safeSendMessage(sock, from, { text: "🎮 O sistema de jogos e economia está desligado neste grupo! Para ligar, use `/jogos on`." }, { quoted: msg });
+          continue;
+        }
+      }
+
       // SISTEMA DE MINERAÇÃO
       if (command === '/minerar') {
         const now = Date.now();
@@ -1037,7 +1047,7 @@ async function startBot() {
         continue;
       }
 
-      // NOVO SISTEMA TRABALHAR & ROUBAR
+      // TRABALHAR & ROUBAR
       if (command === '/trabalhar') {
         const now = Date.now();
         const cooldownHours = db.gameConfigs?.workCooldownHours || 24;
@@ -1858,14 +1868,8 @@ async function startBot() {
         continue;
       }
 
-      const isGameCommand = ['/menujogos', '/carteira', '/dados', '/dardo', '/velha', '/slots', '/trabalhar', '/roubar', '/minerar', '/minerios', '/venderminerios'].includes(command);
+      // EXECUTORES DE JOGOS E ECONOMIA
       if (isGameCommand && isGroup) {
-        const settings = db.groupSettings[from] || {};
-        if (!settings.jogos && !isOwner) {
-          await safeSendMessage(sock, from, { text: "🎮 O modo de jogos está desligado neste grupo! Peça a um administrador para ativar com `/jogos on`." }, { quoted: msg });
-          continue;
-        }
-
         if (command === '/menujogos') {
           const gamesMenu = `🤖 LUNAR BOT | LUNAR SYSTEM ©\n\n` +
             `❖ 🎰 CASSINO & APOSTAS\n` +
