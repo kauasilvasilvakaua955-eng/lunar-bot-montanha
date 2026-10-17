@@ -730,7 +730,7 @@ async function startBot() {
 
           await safeSendMessage(sock, from, {
             text: `❌ *PARTIDA CANCELADA / DESISTÊNCIA!*\n\n` +
-              `@${senderJid.split('@')[0]} desistiu da partida no meio do jogo e perdeu 50% da aposta (*${penalty}¢*)!\n` +
+              `@${senderJid.split('@')[0]} desistiu da partida no meio do jogo e perdeu 50\% da aposta (*${penalty}¢*)!\n` +
               `💰 O oponente @${winnerJid.split('@')[0]} venceu por W.O. e faturou *+${opponentBonus}¢*!`,
             mentions: [senderJid, winnerJid]
           });
@@ -778,10 +778,11 @@ async function startBot() {
             game.turn = game.turn === game.player1 ? game.player2 : game.player1;
             tictactoeGames.set(from, game);
 
+            const b = game.board;
             const boardDisplay = `🎮 *JOGO DA VELHA VALENDO ${game.bet}¢*\n\n` +
-              `${game.board[0]} | ${game.board[1]} \vert{}${game.board[2]}\n` +
-              `${game.board[3]} | ${game.board[4]} \vert{}${game.board[5]}\n` +
-              `${game.board[6]} | ${game.board[7]} \vert{}${game.board[8]}\n\n` +
+              b[0] + ' | ' + b[1] + ' | ' + b[2] + '\n' +
+              b[3] + ' | ' + b[4] + ' | ' + b[5] + '\n' +
+              b[6] + ' | ' + b[7] + ' | ' + b[8] + '\n\n' +
               `👉 Vez do jogador: @${game.turn.split('@')[0]} (Responda com o número de 1 a 9)`;
             await safeSendMessage(sock, from, { text: boardDisplay, mentions: [game.turn] });
             continue;
