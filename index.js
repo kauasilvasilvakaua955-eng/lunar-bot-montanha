@@ -699,16 +699,16 @@ async function startBot() {
               player2: invite.player2,
               turn: invite.player1,
               bet: invite.bet,
-              board: ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
+              board: ['[1]', '[2]', '[3]', '[4]', '[5]', '[6]', '[7]', '[8]', '[9]']
             });
 
             const boardDisplay = `🎮 *DUELO DE JOGO DA VELHA INICIADO!*\n\n` +
               `👤 *Desafiante:* @${invite.player1.split('@')[0]} (❌)\n` +
               `👤 *Rival:* @${invite.player2.split('@')[0]} (⭕)\n` +
               `💰 *Aposta de Cada:* ${invite.bet}¢ (Pote Total: ${invite.bet * 2}¢)\n\n` +
-              `1️⃣ | 2️⃣ | 3️⃣\n` +
-              `4️⃣ | 5️⃣ | 6️⃣\n` +
-              `7️⃣ | 8️⃣ | 9️⃣\n\n` +
+              `[1] | [2] | [3]\n` +
+              `[4] | [5] | [6]\n` +
+              `[7] | [8] | [9]\n\n` +
               `👉 Vez do jogador: @${invite.player1.split('@')[0]} (Responda apenas com o número da casa de 1 a 9)`;
 
             await safeSendMessage(sock, from, { text: boardDisplay, mentions: [invite.player1, invite.player2] });
