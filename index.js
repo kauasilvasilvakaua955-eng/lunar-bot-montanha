@@ -14,7 +14,7 @@ const spamTracker = new Map();
 const tictactoeGames = new Map();
 const tictactoeInvites = new Map();
 
-// EMOJIS NUMÉRICOS SEGUROS CONTRA CORRUPÇÃO DE TERMINAL
+// EMOJIS NUMÉRICOS BLINDADOS CONTRA O ERRO ERT
 const N_1 = '\u0031\uFE0F\u20E3';
 const N_2 = '\u0032\uFE0F\u20E3';
 const N_3 = '\u0033\uFE0F\u20E3';
@@ -754,7 +754,9 @@ async function startBot() {
         const game = tictactoeGames.get(from);
         if (game.turn === senderJid) {
           const pos = parseInt(trimmedText) - 1;
-          if (game.board[pos] !== '❌' && game.board[pos] !== '⭕') {
+          const currentCell = game.board[pos];
+          
+          if (currentCell !== '❌' && currentCell !== '⭕') {
             game.board[pos] = game.turn === game.player1 ? '❌' : '⭕';
             
             const winPatterns = [
