@@ -730,7 +730,7 @@ async function startBot() {
 
           await safeSendMessage(sock, from, {
             text: `❌ *PARTIDA CANCELADA / DESISTÊNCIA!*\n\n` +
-              `@${senderJid.split('@')[0]} desistiu da partida no meio do jogo e perdeu 50\% da aposta (*${penalty}¢*)!\n` +
+              `@${senderJid.split('@')[0]} desistiu da partida no meio do jogo e perdeu 50% da aposta (*${penalty}¢*)!\n` +
               `💰 O oponente @${winnerJid.split('@')[0]} venceu por W.O. e faturou *+${opponentBonus}¢*!`,
             mentions: [senderJid, winnerJid]
           });
@@ -1200,7 +1200,7 @@ async function startBot() {
       }
 
       // COMANDOS DE GERENCIAMENTO DE JOGOS NO MENU ADM
-      if (isGroup && (command === '/resetcoinsjogos' || command === '/editartempojogo' || command === '/editarsalariominimojogo')) {
+      if (isGroup && (command === '/resetcoinsjogos' || command === '/editartempojogo' || command === '/resetartempojogo' || command === '/editarsalariominimojogo')) {
         const groupMetadata = await sock.groupMetadata(from).catch(() => null);
         const participants = groupMetadata?.participants || [];
         const senderParticipant = participants.find(p => p.id === senderJid);
@@ -1236,15 +1236,80 @@ async function startBot() {
         }
 
         if (command === '/editartempojogo') {
-          const hours = parseInt(args[0]);
-          if (isNaN(hours) || hours <= 0) {
-            await safeSendMessage(sock, from, { text: "⚠️ Informe um tempo válido em horas! Exemplo: `/editartempojogo 1`" }, { quoted: msg });
+          const targetGame = args[0]?.toLowerCase();
+          const hours = parseInt(args[1]);
+
+          if (!targetGame || isNaN(hours) || hours <= 0) {
+            await safeSendMessage(sock, from, { text: "⚠️ Uso correto: `/editartempojogo </trabalhar ou /minerar> <horas>`\nExemplo: `/editartempojogo /minerar 2`" }, { quoted: msg });
             continue;
           }
+
           if (!db.gameConfigs) db.gameConfigs = {};
-          db.gameConfigs.workCooldownHours = hours;
-          saveDatabase(db);
-          await safeSendMessage(sock, from, { text: `⏰ Cooldown de trabalho alterado com sucesso para *${hours}h*!` });
+
+          if (targetGame === '/trabalhar' || targetGame === 'trabalhar') {
+            db.gameConfigs.workCooldownHours = hours;
+            saveDatabase(db);
+            await safeSendMessage(sock, from, { text: `⏰ Cooldown de /trabalhar alterado com sucesso para *${hours}h*!` });
+            continue;
+          } else if (targetGame === '/minerar' || targetGame === 'minerar') {
+            db.gameConfigs.mineCooldownHours = hours;
+            saveDatabase(db);
+            await safeSendMessage(sock, from, { text: `⏰ Cooldown de /minerar alterado com sucesso para *${hours}h*!` });
+            continue;
+          } else if (targetGame === '/roubar' || targetGame === 'roubar') {
+            db.gameConfigs.robCooldownHours = hours;
+            saveDatabase(db);
+            await safeSendMessage(sock, from, { text: `⏰ Cooldown de /roubar alterado com sucesso para *${hours}h*!` });
+            continue;
+          } else {
+            await safeSendMessage(sock, from, { text: "⚠️ Jogo desconhecido! Use: `/trabalhar`, `/minerar` ou `/roubar`." }, { quoted: msg });
+            continue;
+          }
+        }
+
+        if (command === '/resetartempojogo') {
+          const targetGame = args[0]?.toLowerCase();
+          const targetUser = msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+          const isAll = args[1]?.toLowerCase() === 'all' || args[0]?.toLowerCase() === 'all';
+
+          if (!targetGame) {
+            await safeSendMessage(sock, from, { text: "⚠️ Uso correto: `/resetartempojogo </trabalhar ou /minerar> @mencao` ou `/resetartempojogo </trabalhar> all`" }, { quoted: msg });
+            continue;
+          }
+
+          let prefix = '';
+          if (targetGame.includes('trabalhar')) prefix = 'work_';
+          else if (targetGame.includes('minerar')) prefix = 'mine_';
+          else if (targetGame.includes('roubar')) prefix = 'rob_';
+          else {
+            await safeSendMessage(sock, from, { text: "⚠️ Jogo inválido! Use: `/trabalhar`, `/minerar` ou `/roubar`." }, { quoted: msg });
+            continue;
+          }
+
+          if (isAll) {
+            let count = 0;
+            for (const key of Object.keys(db.cooldowns)) {
+              if (key.startsWith(prefix)) {
+                delete db.cooldowns[key];
+                count++;
+              }
+            }
+            saveDatabase(db);
+            await safeSendMessage(sock, from, { text: `🔄 *RESET GLOBAL DE TEMPO CONCLUÍDO!* O cooldown de \`${targetGame}\` foi zerado para todos (${count} registros limpos).` });
+            continue;
+          }
+
+          if (targetUser) {
+            const cooldownKey = `${prefix}${targetUser}`;
+            if (db.cooldowns[cooldownKey]) {
+              delete db.cooldowns[cooldownKey];
+              saveDatabase(db);
+            }
+            await safeSendMessage(sock, from, { text: `🔄 O cooldown de \`${targetGame}\` do membro @${targetUser.split('@')[0]} foi resetado com sucesso! Agora ele pode jogar novamente.`, mentions: [targetUser] });
+            continue;
+          }
+
+          await safeSendMessage(sock, from, { text: "⚠️ Marque o membro com `@mencao` ou use `all` para resetar de todo mundo." }, { quoted: msg });
           continue;
         }
 
@@ -1518,7 +1583,8 @@ async function startBot() {
           `› /limparchat - Limpa o chat do grupo\n\n` +
           `❖ 🎮 GERENCIAMENTO DE JOGOS (ADM)\n` +
           `› /resetcoinsjogos @mencao|all - Reseta saldo de moedas\n` +
-          `› /editartempojogo <horas> - Ajusta cooldown de jogos\n` +
+          `› /editartempojogo </jogo> <horas> - Ajusta cooldown de jogos\n` +
+          `› /resetartempojogo </jogo> @mencao|all - Reseta cooldown de usuário(s)\n` +
           `› /editarsalariominimojogo <valor> - Define salário mínimo\n\n` +
           `✦ LUNAR SYSTEM © ✨`;
 
