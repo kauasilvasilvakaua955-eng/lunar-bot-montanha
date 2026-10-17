@@ -671,18 +671,18 @@ async function startBot() {
         }
       }
 
-      // TRATAMENTO DE CONVITE / PARTIDA PENDING DO JOGO DA VELHA
+      // TRATAMENTO DE CONVITE PENDENTE / CANCELAR ANTES DE INICIAR
       if (isGroup && tictactoeInvites.has(from) && (trimmedText === '/aceito' || trimmedText === '/cancelar')) {
         const invite = tictactoeInvites.get(from);
-        if (senderJid === invite.player2) {
+        if (senderJid === invite.player2 || senderJid === invite.player1) {
           if (trimmedText === '/cancelar') {
             updateBalance(db, invite.player1, invite.bet);
             tictactoeInvites.delete(from);
-            await safeSendMessage(sock, from, { text: `❌ O desafio de Jogo da Velha foi recusado/cancelado por @${userNumber}. A aposta foi devolvida ao desafiante.`, mentions: [senderJid] });
+            await safeSendMessage(sock, from, { text: `❌ O desafio de Jogo da Velha foi cancelado por @${userNumber}. A aposta foi devolvida ao desafiante.`, mentions: [senderJid] });
             continue;
           }
 
-          if (trimmedText === '/aceito') {
+          if (trimmedText === '/aceito' && senderJid === invite.player2) {
             const rivalBal = getBalance(db, senderJid);
             if (rivalBal < invite.bet) {
               updateBalance(db, invite.player1, invite.bet);
@@ -699,21 +699,42 @@ async function startBot() {
               player2: invite.player2,
               turn: invite.player1,
               bet: invite.bet,
-              board: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+              board: ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
             });
 
             const boardDisplay = `🎮 *DUELO DE JOGO DA VELHA INICIADO!*\n\n` +
               `👤 *Desafiante:* @${invite.player1.split('@')[0]} (❌)\n` +
               `👤 *Rival:* @${invite.player2.split('@')[0]} (⭕)\n` +
               `💰 *Aposta de Cada:* ${invite.bet}¢ (Pote Total: ${invite.bet * 2}¢)\n\n` +
-              `1 | 2 | 3\n` +
-              `4 | 5 | 6\n` +
-              `7 | 8 | 9\n\n` +
+              `1️⃣ | 2️⃣ | 3️⃣\n` +
+              `4️⃣ | 5️⃣ | 6️⃣\n` +
+              `7️⃣ | 8️⃣ | 9️⃣\n\n` +
               `👉 Vez do jogador: @${invite.player1.split('@')[0]} (Responda apenas com o número da casa de 1 a 9)`;
 
             await safeSendMessage(sock, from, { text: boardDisplay, mentions: [invite.player1, invite.player2] });
             continue;
           }
+        }
+      }
+
+      // /CANCELAR NO MEIO DA PARTIDA EM ANDAMENTO
+      if (isGroup && tictactoeGames.has(from) && trimmedText === '/cancelar') {
+        const game = tictactoeGames.get(from);
+        if (senderJid === game.player1 || senderJid === game.player2) {
+          const winnerJid = senderJid === game.player1 ? game.player2 : game.player1;
+          const penalty = Math.floor(game.bet * 0.50);
+          const opponentBonus = game.bet + penalty;
+
+          updateBalance(db, winnerJid, opponentBonus);
+          tictactoeGames.delete(from);
+
+          await safeSendMessage(sock, from, {
+            text: `❌ *PARTIDA CANCELADA / DESISTÊNCIA!*\n\n` +
+              `@${senderJid.split('@')[0]} desistiu da partida no meio do jogo e perdeu 50\% da aposta (*${penalty}¢*)!\n` +
+              `💰 O oponente @${winnerJid.split('@')[0]} venceu por W.O. e faturou *+${opponentBonus}¢*!`,
+            mentions: [senderJid, winnerJid]
+          });
+          continue;
         }
       }
 
